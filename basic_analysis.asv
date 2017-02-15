@@ -27,9 +27,9 @@ title('Number of stimuli responded to by cell, all cells, all stims')
 % percent response by cell by condition
 
 for t = 1:length(tadpole)
-    conds= unique(tadpole{1,t}.stimorder);
+    conds= unique(tadpole{1,t}.stimorder)
     for i = 1:length(conds)
-        trial_count(conds(i),t) = sum(tadpole{1,t}.stimorder(:) == conds(i));
+        trial_count(conds(i),t) = sum(tadpole{1,t}.stimorder(:) == conds(i))
     end
     count_resp_bycond = zeros(size(tadpole{1,t}.boolean_response, 1), length(conds));
     for i=1:length(conds) %over all stimulus conditions
@@ -41,20 +41,34 @@ for t = 1:length(tadpole)
             end
         end
     end
-    count_resp_bycond_all{1,t} = count_resp_bycond;
+    count_resp_bycond_all{1,t} = count_resp_bycond
     clear('conds')
 end
 
-% generate histograms by stim type
-histdata=[];
+% generate plots for each experiment
+
 for t = 1:length(tadpole)
-    histdata=[histdata; count_resp_bycond_all{1,t}(:,1:4)];
+conds= unique(tadpole{1,t}.stimorder)
+for i = 1:length(conds)
+    figure;
+    hist(count_resp_bycond_all{1,t}(:,i));
+    title(sprintf('Response counts all stims for stim type %d', conds(i));
+end
 end
 
-for i = 1:size(histdata,2)
-    figure;
-    hist(histdata(:,i),25)
-    title(sprintf('All response counts all presentations of stim %d', i))
-end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
