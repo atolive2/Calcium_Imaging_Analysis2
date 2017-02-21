@@ -1,5 +1,7 @@
 %% basic properties (for committee meeting 2/22/2017)
 
+%% Poportion responding (using boolean_response)
+
 % Percent response by cell (all stims combined)
 t=1
 all_prop_responses = [];
@@ -57,4 +59,194 @@ for i = 1:size(histdata,2)
     title(sprintf('All response counts all presentations of stim %d', i))
 end
 
+% Calculate proportion with response
+for t = 1:length(tadpole)
+    conds= unique(tadpole{1,t}.stimorder);
+    for i=1:length(conds)
+        prop_resp_bycond{1,t}(:,i) = count_resp_bycond_all{1,t}(:,i) / trial_count(conds(i),t);
+    end
+end
+
+% hist proportion with response
+prop_histdata=[];
+for t = 1:length(tadpole)
+    prop_histdata=[prop_histdata; prop_resp_bycond{1,t}(:,1:4)];
+end
+
+for i = 1:size(prop_histdata,2)
+    figure;
+    hist(prop_histdata(:,i),25)
+    title(sprintf('All proportion responses all presentations of stim %d', i))
+    axis([0 1 -inf inf])
+end
+
+%% Peak df/f0 values
+
+% Gather all meanpeak values (peak +/-1 averaged) for all ROIs, all trials
+peak_allhistdata = [];
+for t = 1:length(tadpole)
+    num_data = size(tadpole{1,t}.meanpeak_bytrial, 1) * size(tadpole{1,t}.meanpeak_bytrial, 2);
+    trial_data = reshape(cell2mat(tadpole{1,t}.meanpeak_bytrial), 1, num_data);
+    peak_allhistdata = [peak_allhistdata trial_data];
+    clear('trial_data', 'num_data')
+end
+
+outliers = find(peak_allhistdata > 30)
+peak_allhistdata_nooutliers = peak_allhistdata(peak_allhistdata<30);
+hist(peak_allhistdata)
+hist(peak_allhistdata_nooutliers)
+peak_allhistdata_small = peak_allhistdata(peak_allhistdata < 1);
+peak_allhistdata_small = peak_allhistdata_small(peak_allhistdata_small>-0.2)
+hist(peak_allhistdata_small,100)
+
+%% How many cells per tadpole respond?
+%t = 1
+
+for t = 1:length(tadpole)
+    total_trials = size(tadpole{1,t}.boolean_response,2)
+    total_resp = sum(tadpole{1,t}.boolean_response,2)
+    responders50 = total_resp > (total_trials / 2) 
+    prop_responders50(t) = sum(responders50) / size(tadpole{1,t}.boolean_response,1)
+    responders25 = total_resp > (total_trials / 4) 
+    prop_responders25(t) = sum(responders25) / size(tadpole{1,t}.boolean_response,1)
+    clear('responders50', 'responders25', 'total_trials', 'total_resp') 
+end
+
+bar(prop_responders25)
+figure;
+bar(prop_responder50)
+
+% What is the primary modality of responders?
+% pie chart
+t = 1
+
+for t = 1:length(tadpole)
+    total_trials = size(tadpole{1,t}.boolean_response,2);
+    total_resp = sum(tadpole{1,t}.boolean_response,2);
+    responders50 = total_resp > (total_trials / 2) ;
+    responders25 = total_resp > (total_trials / 4) 
+    primary_modality = [];
+    for i = 1:length(responders50)
+        if responders50(i,1)
+            test = tadpole{1,t}.unimax_peakavg(1,i) > tadpole{1,t}.multimax_peakavg(1,i)
+            if test
+                primary_modality = [primary_modality; (tadpole{1,t}.unimax_stimtype(1,i) +1)]
+            else
+                primary_modality = [primary_modality; 1]
+            end
+        end
+    end
+    primary_modality50{1,t} = primary_modality
+    
+    primary_modality = [];
+    for i = 1:length(responders25)
+        if responders25(i,1)
+            test = tadpole{1,t}.unimax_peakavg(1,i) > tadpole{1,t}.multimax_peakavg(1,i)
+            if test
+                primary_modality = [primary_modality; (tadpole{1,t}.unimax_stimtype(1,i) +1)]
+            else
+                primary_modality = [primary_modality; 1]
+            end
+        end
+    end
+    primary_modality25{1,t} = primary_modality
+    %clear('primary_modality')
+    clear('responders50', 'responders25', 'total_trials', 'total_resp')
+end
+
+for t = 1:length(tadpole)
+    piect(1,1) = sum(primary_modality25{1,t} == 1)
+    piect(1,2) = sum(primary_modality25{1,t} == 2)
+    piect(1,3) = sum(primary_modality25{1,t} == 3)
+    figure;
+    labels = {'multi', 'vis', 'mech'}
+    pie(piect, labels)
+    title(sprintf('tadpole %d', t))
+    fig_filename=sprintf('piechart_tadpole%d', t);
+    saveas(gcf,fig_filename,'png');
+    close;
+    clear('fig_filename')
+end
+
+for t = 1:length(tadpole)
+    piect(t,1) = sum(primary_modality25{1,t} == 1);
+    piect(t,2) = sum(primary_modality25{1,t} == 2);
+    piect(t,3) = sum(primary_modality25{1,t} == 3);
+end
+grandpie25 = sum(piect)
+clear('piect')
+for t = 1:length(tadpole)
+    piect(t,1) = sum(primary_modality50{1,t} == 1)
+    piect(t,2) = sum(primary_modality50{1,t} == 2)
+    piect(t,3) = sum(primary_modality50{1,t} == 3)
+end
+grandpie50 = sum(piect)
+
+figure;
+labels = {'multi', 'vis', 'mech'}
+pie(grandpie25, labels)
+title('25% responders')
+fig_filename='grandpie25';
+saveas(gcf,fig_filename,'png');
+
+figure;
+labels = {'multi', 'vis', 'mech'}
+pie(grandpie50, labels)
+title('50% responders')
+fig_filename='grandpie50';
+saveas(gcf,fig_filename,'png');
+
+%% Scatterplot of avg peak multi vs uni
+
+for t = 1:length(tadpole)
+    scatter(tadpole{1,t}.unimax_peakavg, tadpole{1,t}.multimax_peakavg)
+    xlabel('unisensory avg peak response')
+    ylabel('multisensory avg peak response')
+    title(sprintf('tadpole %d peak response', t))
+    fig_filename=sprintf('peak_univmulti_tadpole%d', t);
+    saveas(gcf,fig_filename,'png');
+end
+
+% scatter all together
+univals = [];
+multivals = [];
+for t = 1:length(tadpole)
+    univals = [univals tadpole{1,t}.unimax_peakavg]
+    multivals = [multivals tadpole{1,t}.multimax_peakavg]
+end
+scatter(univals, multivals)
+xlabel('unisensory avg peak response')
+ylabel('multisensory avg peak response')
+title('All tadpoles peak response')
+fig_filename='peak_univmulti_all';
+saveas(gcf,fig_filename,'png')
+
+%% Peak location histogram
+
+% multi
+multi_peaklocall = [];
+for t = 1:length(tadpole)
+    multi_peaklocall = [multi_peaklocall tadpole{1,t}.peakloc_avg(1,:)];
+end
+hist(multi_peaklocall,40)
+
+uni_peaklocall = [];
+for t = 1:length(tadpole)
+    for i = 1:size(tadpole{1,t}.peakloc_avg,2)
+        if tadpole{1,t}.unimax_stimtype(1,i) == 1 %visual
+            uni_peaklocall = [uni_peaklocall tadpole{1,t}.peakloc_avg(2,i)];
+        elseif tadpole{1,t}.unimax_stimtype(1,i) == 2
+            uni_peaklocall = [uni_peaklocall tadpole{1,t}.peakloc_avg(3,i)];
+        end
+    end
+end
+hist(uni_peaklocall,40)
+
+difference = multi_peaklocall - uni_peaklocall;
+hist(difference,50)
+[h, p] = kstest(difference)
+% h=1, so difference is not normally distributed
+
+%% Proximity 
+% scatter plot and linear fit of euclid distance vs peak avg loc
 
