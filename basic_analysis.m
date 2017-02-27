@@ -247,6 +247,29 @@ hist(difference,50)
 [h, p] = kstest(difference)
 % h=1, so difference is not normally distributed
 
+%% For every cell, percent response for each category
+
+%% For each cell, peak response
+for t = 1:length(tadpole)
+    for i = 1:size(tadpole{1,t}.peak_avg,2)
+        tmpmax = max(tadpole{1,t}.peak_avg(1,i)-tadpole{1,t}.peak_avg(4,i));
+        spontdiff(i) = tmpmax-tadpole{1,t}.peak_avg(4,i);
+    end
+    tadpole{1,t}.spontdiff = spontdiff;
+    clear('spontdiff')
+end
+
+% how many cells have positive spontdiff (indicating that at least one mean stimulus is
+% greater than mean spontaneous activity)
+
+for t = 1:length(tadpole)
+    pos_spontdiff(t) = length(find(tadpole{1,t}.spontdiff > 0));
+    neg_spontdiff(t) = length(find(tadpole{1,t}.spontdiff < 0));
+end
+total_pos = sum(pos_spontdiff)
+total_neg = sum(neg_spontdiff)
+prop_posspontdiff = pos_spontdiff ./ (neg_spontdiff + pos_spontdiff)
+
 %% Proximity 
 % scatter plot and linear fit of euclid distance vs peak avg loc
 
