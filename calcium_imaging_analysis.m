@@ -114,26 +114,27 @@ flatStack=cat(3, flatStack, importedStack9);
 % latin square A5 is 12 6 11 4 11 12 6 4 6 11 12 4 (med M / low V)
 
 % old order is 1 2 3 4 1 2 3 4 1 2 3 4
-tadpole.stimorder = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
+tadpole.stimorder = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
+tadpole.stimorder = [1 1 1 1 1 1 1 1 1 1]
 %tadpole.stimorder = [8 2 7 4 2 7 8 4 7 8 2 4 7 2 8 4 8 7 2 4 2 8 7 4 10 2 12 4 2 12 10 4 12 10 2 4 12 2 10 4 10 12 2 4 2 10 12 4 10 2 12 4 2 12 10 4 12 10 2 4]
 %check
 length(tadpole.stimorder)
 %2. experiment number
-tadpole.expnum= 25
+tadpole.expnum= 26
 %3. date of experiment
-tadpole.expdate='20170227'
+tadpole.expdate='20170301'
 %4. file path
-tadpole.filepath= 'F:/Calcium_Imaging_Analysis/_unanalyzed data/20160227 ca exp 25 ex vivo patch/'
+tadpole.filepath= 'F:/Calcium_Imaging_Analysis/_unanalyzed data/20160301 Ca exp 26 ex vivo patch/'
 %5. make a folder for the figures
-mkdir([tadpole.filepath 'figures_exp25']); 
+mkdir([tadpole.filepath 'figures_exp26']); 
 %6. trial length
 tadpole.trial_length= [160];
 %7. number of trial blocks
 tadpole.numtrialblocks=1
 %8. Create figure save path
-tadpole.figure_filepath=[tadpole.filepath 'figures_exp25/']
+tadpole.figure_filepath=[tadpole.filepath 'figures_exp26/']
 %9. number of trials in a block
-tadpole.num_trials=30
+tadpole.num_trials=10
 %10. what blocks is this?
 %tadpole.blockids = [ 3 4 5 6 7 ]
 
@@ -181,13 +182,13 @@ for i = 1:size(tadpole.trial_splitS,2)
     xlabel('time(s)');
     ylabel('raw pixel intensity');
     hold off
-    fig_filename=sprintf([tadpole.figure_filepath 'exp%dtrial%d.png'], tadpole.expnum, i);
+    fig_filename=sprintf([tadpole.figure_filepath 'cell2exp%dtrial%d.png'], tadpole.expnum, i);
     saveas(gcf,fig_filename,'png');
     close;
     clear('fig_filename')
 end
 
-tadpole.badtrials = [5 6];
+%tadpole.badtrials = [5 6];
 
 %% After checking for bad trials visually
 
