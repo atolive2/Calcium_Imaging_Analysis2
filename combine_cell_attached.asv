@@ -295,6 +295,9 @@ for i = 2:9
         if CellsAll(idxs(k)).spikeFrames(1,1) > 95 || CellsAll(idxs(k)).spikeFrames(1,1) < 30
             idxs(k) = 0
         end
+%         if CellsAll(idxs(k)).spikeFrames(1,1) < 10
+%             idxs(k) = 0
+%         end
     end
             
     figure;
@@ -308,21 +311,7 @@ for i = 2:9
     plot(31, 0, 'r*')
     hold off
     title(sprintf('Spike Triggered average of traces with %d spikes', i));
-    ax=gca;
-    xsize = 90;
-    ax.XTick = [0, xsize/3.94, (xsize/3.94)*2, (xsize/3.94)*3, (xsize/3.94)*4] %, (xsize/7)*5, (xsize/7)*6, (xsize/7)*7];
-    ax.XTickLabel = {'0','1', '2', '3', '4'}; %, '5', '6', '7'};
-    ylabel('smoothed \DeltaF/F_{0}');
-    xlabel('time(s)');
-    fig_filename=sprintf(['F:/Calcium_Imaging_Analysis/cell_attached_files/Spring2017analysis/figures/' 'Spike_triggered_avg_smoothed_df_f0_%dspikes.png'], i);
-    saveas(gcf,fig_filename,'png');
-    close;
-    clear('fig_filename')
+    
 end
-% looks ok, but need to find and eliminate problem traces. 
-% problem: they all look pretty similar in size.
-% useful note: looks like peak of Ca signal coincides with spike time
-
-
 
     

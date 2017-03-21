@@ -122,25 +122,25 @@ tadpole.stimorder = [1 1 1] 1 1 1 1 1 1] 1 1 1 1 1 1 1 1 1]
 %check
 length(tadpole.stimorder)
 %2. experiment number
-tadpole.expnum= 18
+tadpole.expnum= 28
 %3. date of experiment
-tadpole.expdate='20160726'
+tadpole.expdate='20170315'
 %4. file path
 tadpole.filepath= 'F:/Calcium_Imaging_Analysis/cell_attached_files/Spring2017analysis/'
 %5. make a folder for the figures
-mkdir([tadpole.filepath 'figures/exp18']); 
+mkdir([tadpole.filepath 'figures/exp28']); 
 %6. trial length
-tadpole.trial_length= [159];
+tadpole.trial_length= [160];
 %7. number of trial blocks
 tadpole.numtrialblocks=1
 %8. Create figure save path
-tadpole.figure_filepath=[tadpole.filepath 'figures/cell4']
+tadpole.figure_filepath=[tadpole.filepath 'cell6']
 %9. number of trials in a block
-tadpole.num_trials=3
+tadpole.num_trials=10
 %10. what blocks is this?
 %tadpole.blockids = [ 3 4 5 6 7 ]
 %what cell number?
-tadpole.cellid = 4
+tadpole.cellid = 6
 
 % %Make sure there are no NaN ROIs--replace all NaN with 0.
 % [row, col] = find(isnan(somaticF))
@@ -186,7 +186,7 @@ for i = 1:size(tadpole.trial_splitS,2)
     xlabel('time(s)');
     ylabel('raw pixel intensity');
     hold off
-    fig_filename=sprintf([tadpole.figure_filepath 'tad2cell1exp%dtrial%d.png'], tadpole.expnum, i);
+    fig_filename=sprintf([tadpole.figure_filepath 'cell1exp%dtrial%d.png'], tadpole.expnum, i);
     saveas(gcf,fig_filename,'png');
     close;
     clear('fig_filename')
@@ -217,7 +217,7 @@ end
 
 % Extract parameters for each trial
 [ tadpole.area_bytrial ] = calc_area( tadpole.df_f0, 42 )
-%[ tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial, tadpole.meanpeak_bytrial_errors ] = calc_peak( tadpole.signal )
+[ tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial, tadpole.meanpeak_bytrial_errors ] = calc_peak( tadpole.signal )
 % for unknown reasons, calc_peak suddenly stopped working on gcamp_ours
 % (exp 921)
 [ tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial] = calc_peak( tadpole.signal )
