@@ -30,43 +30,35 @@ function [ MSenhancement ] = calc_MSenhancement( data )
     
     % this matrix aligns the 3 conditions - row = MS, V, M, 
     % col = MS type, V type that matches MS, M type that matches
-% if size(data,1) == 4
-%     MSstims = [1; 2; 3];
-% elseif size(data,1) == 6
-%     MSstims = [1, 5, 8
-%                2, 6, 6
-%                3, 3, 7];
-%            % note that 8 is actually a 9, but the data for 9 is in position
-%            % 8 in the input data.
-% elseif size(data,1) == 8
-%     MSstims = [1, 5;
-%                 2, 6;
-%                 3, 9]
-% elseif size(data,1) == 9
-%     MSstims = [1, 5, 8, 9;
-%                2, 6, 2, 6;
-%                3, 3, 7, 7];
-% elseif size(data,1) == 12
-%         MSstims = [1, 5, 8, 9, 10;
-%                    2, 6, 2, 6, 6;
-%                    3, 3, 7, 7, 12];
-% else 
-%     sprintf('error: dim of data not 4, 8 or 12')
-%     return
-% end
-
-
-% for i = 1:size(MSstims, 2) % over each stim type
-%     for j = 1:size(data,2) % over each ROI
-%         MSenhancement(i,j) = data(MSstims(1,i), j) / max([data(MSstims(2,i),j), data(MSstims(3,i),j)]);
-%     end
-% end
-
-%for i = 1:size(MSstims, 2) % over each stim type
+if size(data,1) == 4
+    MSstims = [1; 2; 3];
+elseif size(data,1) == 6
+    MSstims = [1, 5; 
+               2, 6;
+               3, 3; ];
+elseif size(data,1) == 8
+    MSstims = [1, 5;
+                2, 6;
+                3, 9]
+elseif size(data,1) == 9
+    MSstims = [1, 5, 8, 9;
+               2, 6, 2, 6;
+               3, 3, 7, 7];
+elseif size(data,1) == 12
+        MSstims = [1, 5, 8, 9, 10;
+                   2, 6, 2, 6, 6;
+                   3, 3, 7, 7, 12];
+else 
+    sprintf('error: dim of data not 4, 8 or 12')
+    return
+end
+       
+for i = 1:size(MSstims, 2) % over each stim type
     for j = 1:size(data,2) % over each ROI
-        MSenhancement(1,j) = data(1, j) / max([data(2,j), data(3,j)]);
+        MSenhancement(i,j) = data(MSstims(1,i), j) / max([data(MSstims(2,i),j), data(MSstims(3,i),j)]);
     end
-%end
+end
+
 
 end
 
