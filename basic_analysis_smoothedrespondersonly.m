@@ -8,11 +8,11 @@ all_prop_responses = [];
 for t = 1:length(tadpole)
     stimuli = tadpole{1,t}.stimorder ~= 4
     total_stimuli = sum(stimuli)
-    prop_responses = zeros(size(tadpole{1,t}.boolean_response_sm,1),1);
+    prop_responses = zeros(size(tadpole{1,t}.boolean_response,1),1);
     for i=1:length(stimuli)
         if stimuli(i)
-            for j = 1:size(tadpole{1,t}.boolean_response_sm,1)
-                prop_responses(j,1) = prop_responses(j,1) + tadpole{1,t}.boolean_response_sm(j,i);
+            for j = 1:size(tadpole{1,t}.boolean_response,1)
+                prop_responses(j,1) = prop_responses(j,1) + tadpole{1,t}.boolean_response(j,i);
             end
         end
     end
@@ -33,12 +33,12 @@ for t = 1:length(tadpole)
     for i = 1:length(conds)
         trial_count(conds(i),t) = sum(tadpole{1,t}.stimorder(:) == conds(i));
     end
-    count_resp_bycond = zeros(size(tadpole{1,t}.boolean_response_sm, 1), length(conds));
+    count_resp_bycond = zeros(size(tadpole{1,t}.boolean_response, 1), length(conds));
     for i=1:length(conds) %over all stimulus conditions
         for j = 1:size(tadpole{1,t}.stimmask,1) %over all trials
             if tadpole{1,t}.stimmask(j,i) %1=this trial presented stimulus i
-                for k = 1:size(tadpole{1,t}.boolean_response_sm, 1)
-                    count_resp_bycond(k,i) = count_resp_bycond(k,i) + tadpole{1,t}.boolean_response_sm(k,j);
+                for k = 1:size(tadpole{1,t}.boolean_response, 1)
+                    count_resp_bycond(k,i) = count_resp_bycond(k,i) + tadpole{1,t}.boolean_response(k,j);
                 end
             end
         end
@@ -85,15 +85,14 @@ end
 % Gather all meanpeak values (peak +/-1 averaged) for all ROIs, all trials
 peak_allhistdata = [];
 for t = 1:length(tadpole)
-    num_data = size(tadpole{1,t}.meanpeak_bytrial_sm, 1) * size(tadpole{1,t}.meanpeak_bytrial_sm, 2);
-    trial_data = reshape(cell2mat(tadpole{1,t}.meanpeak_bytrial_sm), 1, num_data);
+    num_data = size(tadpole{1,t}.meanpeak_bytrial, 1) * size(tadpole{1,t}.meanpeak_bytrial, 2);
+    trial_data = reshape(cell2mat(tadpole{1,t}.meanpeak_bytrial), 1, num_data);
     peak_allhistdata = [peak_allhistdata trial_data];
     clear('trial_data', 'num_data')
 end
 
 outliers = find(peak_allhistdata > 30)
 peak_allhistdata_nooutliers = peak_allhistdata(peak_allhistdata<30);
-figure;
 hist(peak_allhistdata)
 hist(peak_allhistdata_nooutliers)
 peak_allhistdata_small = peak_allhistdata(peak_allhistdata < 1);
@@ -104,41 +103,34 @@ hist(peak_allhistdata_small,100)
 %t = 1
 
 for t = 1:length(tadpole)
-    total_trials = size(tadpole{1,t}.boolean_response_sm,2)
-    total_resp = sum(tadpole{1,t}.boolean_response_sm,2)
+    total_trials = size(tadpole{1,t}.boolean_response,2)
+    total_resp = sum(tadpole{1,t}.boolean_response,2)
     responders50 = total_resp > (total_trials / 2) 
-    prop_responders50(t) = sum(responders50) / size(tadpole{1,t}.boolean_response_sm,1)
+    prop_responders50(t) = sum(responders50) / size(tadpole{1,t}.boolean_response,1)
     responders25 = total_resp > (total_trials / 4) 
-    prop_responders25(t) = sum(responders25) / size(tadpole{1,t}.boolean_response_sm,1)
+    prop_responders25(t) = sum(responders25) / size(tadpole{1,t}.boolean_response,1)
     clear('responders50', 'responders25', 'total_trials', 'total_resp') 
 end
 
 bar(prop_responders25)
 figure;
-bar(prop_responders50)
+bar(prop_responder50)
 
 % What is the primary modality of responders?
 % pie chart
-%t = 1
-for t = 1:length(tadpole)
-    for k = 1:size(tadpole{1,t}.peak_avg_sm, 2) % over all rois
-        [tadpole{1,t}.unimax_peakavg_sm(1,k) tadpole{1,t}.unimax_stimtype_sm(1,k)] = max(tadpole{1,t}.peak_avg_sm(2:3, k));
-        tadpole{1,t}.multimax_peakavg_sm(1,k) = tadpole{1,t}.peak_avg_sm(1, k);
-    end
-end
-
+t = 1
 
 for t = 1:length(tadpole)
-    total_trials = size(tadpole{1,t}.boolean_response_sm,2);
-    total_resp = sum(tadpole{1,t}.boolean_response_sm,2);
+    total_trials = size(tadpole{1,t}.boolean_response,2);
+    total_resp = sum(tadpole{1,t}.boolean_response,2);
     responders50 = total_resp > (total_trials / 2) ;
     responders25 = total_resp > (total_trials / 4) 
     primary_modality = [];
     for i = 1:length(responders50)
         if responders50(i,1)
-            test = tadpole{1,t}.unimax_peakavg_sm(1,i) > tadpole{1,t}.multimax_peakavg_sm(1,i)
+            test = tadpole{1,t}.unimax_peakavg(1,i) > tadpole{1,t}.multimax_peakavg(1,i)
             if test
-                primary_modality = [primary_modality; (tadpole{1,t}.unimax_stimtype_sm(1,i) +1)]
+                primary_modality = [primary_modality; (tadpole{1,t}.unimax_stimtype(1,i) +1)]
             else
                 primary_modality = [primary_modality; 1]
             end
@@ -149,9 +141,9 @@ for t = 1:length(tadpole)
     primary_modality = [];
     for i = 1:length(responders25)
         if responders25(i,1)
-            test = tadpole{1,t}.unimax_peakavg_sm(1,i) > tadpole{1,t}.multimax_peakavg_sm(1,i)
+            test = tadpole{1,t}.unimax_peakavg(1,i) > tadpole{1,t}.multimax_peakavg(1,i)
             if test
-                primary_modality = [primary_modality; (tadpole{1,t}.unimax_stimtype_sm(1,i) +1)]
+                primary_modality = [primary_modality; (tadpole{1,t}.unimax_stimtype(1,i) +1)]
             else
                 primary_modality = [primary_modality; 1]
             end
@@ -194,24 +186,24 @@ figure;
 labels = {'multi', 'vis', 'mech'}
 pie(grandpie25, labels)
 title('25% responders')
-fig_filename='grandpie25_sm';
+fig_filename='grandpie25';
 saveas(gcf,fig_filename,'png');
 
 figure;
 labels = {'multi', 'vis', 'mech'}
 pie(grandpie50, labels)
 title('50% responders')
-fig_filename='grandpie50_sm';
+fig_filename='grandpie50';
 saveas(gcf,fig_filename,'png');
 
 %% Scatterplot of avg peak multi vs uni
 
 for t = 1:length(tadpole)
-    scatter(tadpole{1,t}.unimax_peakavg_sm, tadpole{1,t}.multimax_peakavg_sm)
+    scatter(tadpole{1,t}.unimax_peakavg, tadpole{1,t}.multimax_peakavg)
     xlabel('unisensory avg peak response')
     ylabel('multisensory avg peak response')
     title(sprintf('tadpole %d peak response', t))
-    fig_filename=sprintf('peak_univmulti_tadpole%d_smoothed', t);
+    fig_filename=sprintf('peak_univmulti_tadpole%d', t);
     saveas(gcf,fig_filename,'png');
 end
 
@@ -219,14 +211,14 @@ end
 univals = [];
 multivals = [];
 for t = 1:length(tadpole)
-    univals = [univals tadpole{1,t}.unimax_peakavg_sm]
-    multivals = [multivals tadpole{1,t}.multimax_peakavg_sm]
+    univals = [univals tadpole{1,t}.unimax_peakavg]
+    multivals = [multivals tadpole{1,t}.multimax_peakavg]
 end
 scatter(univals, multivals)
 xlabel('unisensory avg peak response')
 ylabel('multisensory avg peak response')
 title('All tadpoles peak response')
-fig_filename='peak_univmulti_all_smoothed';
+fig_filename='peak_univmulti_all';
 saveas(gcf,fig_filename,'png')
 
 %% Peak location histogram
@@ -234,26 +226,23 @@ saveas(gcf,fig_filename,'png')
 % multi
 multi_peaklocall = [];
 for t = 1:length(tadpole)
-    multi_peaklocall = [multi_peaklocall tadpole{1,t}.peakloc_avg_sm(1,:)];
+    multi_peaklocall = [multi_peaklocall tadpole{1,t}.peakloc_avg(1,:)];
 end
-figure;
 hist(multi_peaklocall,40)
 
 uni_peaklocall = [];
 for t = 1:length(tadpole)
-    for i = 1:size(tadpole{1,t}.peakloc_avg_sm,2)
-        if tadpole{1,t}.unimax_stimtype_sm(1,i) == 1 %visual
-            uni_peaklocall = [uni_peaklocall tadpole{1,t}.peakloc_avg_sm(2,i)];
-        elseif tadpole{1,t}.unimax_stimtype_sm(1,i) == 2
-            uni_peaklocall = [uni_peaklocall tadpole{1,t}.peakloc_avg_sm(3,i)];
+    for i = 1:size(tadpole{1,t}.peakloc_avg,2)
+        if tadpole{1,t}.unimax_stimtype(1,i) == 1 %visual
+            uni_peaklocall = [uni_peaklocall tadpole{1,t}.peakloc_avg(2,i)];
+        elseif tadpole{1,t}.unimax_stimtype(1,i) == 2
+            uni_peaklocall = [uni_peaklocall tadpole{1,t}.peakloc_avg(3,i)];
         end
     end
 end
-figure;
 hist(uni_peaklocall,40)
 
 difference = multi_peaklocall - uni_peaklocall;
-figure;
 hist(difference,50)
 [h, p] = kstest(difference)
 % h=1, so difference is not normally distributed

@@ -181,6 +181,9 @@ plot(cell2mat(tadpole{1,16}.spikeCount), cell2mat(tadpole{1,16}.meanpeak_bytrial
 figure;
 hold on
 for t = 1:length(tadpole)
+    if t == 12
+        continue
+    else
     lsp = length(cell2mat(tadpole{1,t}.spikeCount));
     lpk = length(tadpole{1,t}.meanpeak_bytrial_filtered(1,:));
     if lsp ~= lpk 
@@ -189,8 +192,14 @@ for t = 1:length(tadpole)
         spikeCt = cell2mat(tadpole{1,t}.spikeCount);
     end
     plot(spikeCt, cell2mat(tadpole{1,t}.meanpeak_bytrial_filtered(1,:)), '*')
+    end
 end
 hold off
+% find shitty high spike count cell
+legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28')
+% shitty cell is 12, which has tons of pre-stim activity.
+
+
 
 %% Find trials with early spikes (during baseline)
 % earlySpike (before frame 42/1.8 sec) has 1, no early spike has 0.
@@ -296,7 +305,15 @@ for i = 2:9
             idxs(k) = 0
         end
     end
-            
+
+    for k = 1:length(idxs)
+        if idxs(k) ~= 0
+            if min(CellsAll(idxs(k)).trace(:,:)) < -0.2 
+                idxs(k) = 0
+            end
+        end
+    end
+    
     figure;
     hold on
     for j = 1:length(idxs)
@@ -307,7 +324,7 @@ for i = 2:9
     end
     plot(31, 0, 'r*')
     hold off
-    title(sprintf('Spike Triggered average of traces with %d spikes', i));
+    title(sprintf('Spike Triggered average of traces with %d spikes', count));
     ax=gca;
     xsize = 90;
     ax.XTick = [0, xsize/3.94, (xsize/3.94)*2, (xsize/3.94)*3, (xsize/3.94)*4] %, (xsize/7)*5, (xsize/7)*6, (xsize/7)*7];
@@ -323,6 +340,203 @@ end
 % problem: they all look pretty similar in size.
 % useful note: looks like peak of Ca signal coincides with spike time
 
+%% Figures for Carlos/Chris
 
+%find crap traces
+idx = find([CellsAll.spikeCount] == 4);
+for i = 1:length(idx)
+    subset2spikes(:,i) = CellsAll(idx(i)).trace(2:159,1);    
+end
+[ row col ] = find(subset2spikes(1:20,:) > 0.1)
 
+% for 2 spikes, eliminated 1 trace - exp 18 cell 2, trace 2 (CellsAll(86) )
+% for 3 spikes, eliminated 1 trace - exp 27 cell 1, trace 4 (CellsAll(209)
+
+% Average all traces with a given number of spikes
+for i = 2:9
+    count = i-1;
+    idxs = find([CellsAll.spikeCount] == count);
+    for k = 1:length(idxs)
+        if CellsAll(idxs(k)).spikeFrames(1,1) > 95 || CellsAll(idxs(k)).spikeFrames(1,1) < 30
+            idxs(k) = 0;
+        end
+    end
+    idxs_pruned = idxs(idxs~= 0);
+    for y = 1:length(idxs_pruned)
+        start = CellsAll(idxs_pruned(y)).spikeFrames(1,1)
+        tmpdata(:,y) = CellsAll(idxs_pruned(y)).trace((start-30):(start+60), 1);
+    end
+    Mean_traces(i,:) = mean(tmpdata,2);
+    clear('idxs', 'idxs_pruned', 'tmpdata')
+end
+figure; plot(Mean_traces')
+
+% get zero traces
+idxs = find([CellsAll.spikeCount] == 0);
+    for y = 1:length(idxs)
+        start = 50
+        tmpdata(:,y) = CellsAll(idxs(y)).trace((start-30):(start+60), 1);
+    end
+Mean_traces(1,:) = mean(tmpdata,2);
+
+% plot average traces (spike triggered averages)
+figure; 
+hold on
+plot(Mean_traces')
+plot(31, 0, 'r*')
+hold off
+title('Spike Triggered averages');
+ax=gca;
+xsize = 90;
+ax.XTick = [0, xsize/3.94, (xsize/3.94)*2, (xsize/3.94)*3, (xsize/3.94)*4] %, (xsize/7)*5, (xsize/7)*6, (xsize/7)*7];
+ax.XTickLabel = {'0','1', '2', '3', '4'}; %, '5', '6', '7'};
+ylabel('smoothed \DeltaF/F_{0}');
+xlabel('time(s)');
+legend('0 spikes', '1 spike', '2 spikes', '3 spikes', '4 spikes', '5 spikes', '6 spikes', '7 spike', '8 spikes', 'Spike time', 'Orientation', 'vertical')
+
+%% plot spike count vs peak df/f0 for traces with no prestim activity
+
+figure;
+spikesvs = [];
+dff0vs = [];
+hold on 
+for c = 1:length(CellsAll)
+    if CellsAll(c).earlySpikes == 0
+        spkct = length(CellsAll(c).spikeFrames);
+        dff0 = max(CellsAll(c).trace);
+        plot(spkct, dff0, 'k*')
+        %spikesvs = [spikesvs; spkct];
+        %dff0vs = [dff0vs; dff0]
+    end
+end
+
+% add linear regression
+X_pts = 1:25
+m = 0.01356
+b = 0.1311
+plot(X_pts, m*X_pts+b)
+hold off
+ylabel('\DeltaF/F_{0}')
+xlabel('spike count')
+title('All traces without pre-stim spikes')
+
+% Plot mean and std dev of each spike count 
+% get mean and sd for spike counts with more than 1 trace, if no early
+% spikes
+for i = 1:max([CellsAll.spikeCount])
+    count = i-1;
+    idxs = find([CellsAll.spikeCount] == count);
+    if length(idxs) > 1
+        for j = 1:length(idxs)
+            if CellsAll(idxs(j)).earlySpikes == 0
+            tmpdata(:,j) = [CellsAll(idxs(j)).trace(1:159, 1)];
+            end
+        end
+        if exist('tmpdata', 'var')
+        max_tmpdata = max(tmpdata); 
+        length(max_tmpdata)
+        max_tmpdata(max_tmpdata == 0) = [];
+        length(max_tmpdata)
+        avg_dff0(i) = mean(max_tmpdata);
+        sddev_dff0(i) = std(max_tmpdata);
+        clear('tmpdata', 'max_tmpdata');
+        end
+    end
+end
+
+% plot mean and std
+figure;
+errorbar(avg_dff0, sddev_dff0, 'o')
+ax=gca;
+xsize = length(avg_dff0);
+xlim([0 27])
+ax.XTick = [1, 6, 11, 16, 21, 26];;
+ax.XTickLabel = {'0','5', '10', '15', '20', '25'}; 
+ylabel('mean max \DeltaF/F_{0}')
+xlabel('spike count')
+title('spike count vs mean max \DeltaF/F_{0}')
+
+%% Example cell plots
+
+% Cell 10
+figure;
+plot([CellsAll(52:56).trace])
+legend('3', '0', '1', '2', '3')
+
+% cell 9
+figure; 
+plot([CellsAll(38:51).trace])
+legend('17','2','13','8','0','8','2','0','7','1','3','2','3','1')
+spikenums = unique([CellsAll(38:51).spikeCount])
+figure;
+hold on
+for c = 38:51
+    if CellsAll(c).spikeCount == 0
+        plot(CellsAll(c).trace, 'k')
+    elseif CellsAll(c).spikeCount == 1
+        plot(CellsAll(c).trace, 'b')
+    elseif CellsAll(c).spikeCount == 2
+        plot(CellsAll(c).trace, 'r')  
+    elseif CellsAll(c).spikeCount == 3
+        plot(CellsAll(c).trace, 'm')
+    elseif CellsAll(c).spikeCount > 6
+        plot(CellsAll(c).trace, 'Color', [0 1 1])
+    end
+end
+hold off
+    ax=gca;
+    xsize = 160;
+    ax.XTick = [0, xsize/7, (xsize/7)*2, (xsize/7)*3, (xsize/7)*4, (xsize/7)*5, (xsize/7)*6, (xsize/7)*7];
+    ax.XTickLabel = {'0','1', '2', '3', '4', '5', '6', '7'};
+    ylabel('smoothed \DeltaF/F_{0}');
+    xlabel('time(s)');
+for c = 38:51
+    toexport = mat2str(CellsAll(c).spikeFrames)
+end
+
+%% Plot all with prestim spikes
+figure;
+hold on
+for c = 1:length(CellsAll)
+    if CellsAll(c).earlySpikes == 1
+        plot(CellsAll(c).trace)
+    end
+end
+hold off
+    ax=gca;
+    xsize = 160;
+    ax.XTick = [0, xsize/7, (xsize/7)*2, (xsize/7)*3, (xsize/7)*4, (xsize/7)*5, (xsize/7)*6, (xsize/7)*7];
+    ax.XTickLabel = {'0','1', '2', '3', '4', '5', '6', '7'};
+    ylabel('smoothed \DeltaF/F_{0}');
+    xlabel('time(s)');
+    title('all with early spikes')
     
+% find and remove bad traces
+earlytraces = find([CellsAll(:).earlySpikes] == 1)
+[cell loc] = ([CellsAll(earlytraces).trace] > 0.3)
+
+for c = 1:length(earlytraces)
+    tmpdata(:,c) = [CellsAll(c).trace(1:159, 1)];
+end
+
+max(tmpdata)
+% shitty trace is 207
+min(tmpdata)
+% shitty trace is 216
+
+% plot only useful traces
+figure;
+hold on
+for c = 1:length(earlytraces)
+        plot(CellsAll(earlytraces(c)).trace)
+        %pause(1)
+end
+
+hold off
+    ax=gca;
+    xsize = 160;
+    ax.XTick = [0, xsize/7, (xsize/7)*2, (xsize/7)*3, (xsize/7)*4, (xsize/7)*5, (xsize/7)*6, (xsize/7)*7];
+    ax.XTickLabel = {'0','1', '2', '3', '4', '5', '6', '7'};
+    ylabel('smoothed \DeltaF/F_{0}');
+    xlabel('time(s)');
+    title('all with early spikes')
