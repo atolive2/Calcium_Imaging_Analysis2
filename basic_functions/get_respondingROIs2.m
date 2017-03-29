@@ -17,7 +17,7 @@ boolean_response = zeros(size(area));
 sum_responses = zeros(size(area,1), 1);
 for i = 1:size(area,1)
     for j = 1:size(area,2)
-        if area(i,j) > 0 && peak(i,j) > 0.2 && peakloc(i,j) > 20 && peak(i,j) < 10
+        if area{i,j} > 0 && peak(i,j) > 0.2 && peakloc(i,j) > 20 && peak(i,j) < 10
             boolean_response(i,j) = 1;
         end
     end
@@ -25,4 +25,3 @@ for i = 1:size(area,1)
 end
 
 end
-

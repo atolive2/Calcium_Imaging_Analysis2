@@ -52,8 +52,8 @@ hold off
 % Exp 5 ROI 51
 % in tadpole{1,11}
 % exp 8 ROI 43 in tadpole{1,12}
-t = 14
-roi = 43
+t = 11
+roi = 51
 % raw somatic signal
 figure;
 hold on

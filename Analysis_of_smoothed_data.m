@@ -54,15 +54,15 @@ end
 for t = 1:length(tadpole)
     % Extract parameters for each trial
     [ tadpole{1,t}.area_bytrial_sm ] = calc_area( tadpole{1,t}.smoothed, 46 )
-    [ tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.peakloc_bytrial_sm] = calc_peak( tadpole{1,t}.smoothed)
-, tadpole{1,t}.peak_bytrial_sm 
+    [ tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.peakloc_bytrial_sm, tadpole{1,t}.peak_bytrial_sm ] = calc_peak2( tadpole{1,t}.smoothed, 5, 5)
+
     % Define response/no response
-    [ tadpole{1,t}.boolean_response_sm, tadpole{1,t}.sum_responses_sm ] = get_respondingROIs( tadpole{1,t}.area_bytrial_sm, tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.peakloc_bytrial_sm )
+    [ tadpole{1,t}.boolean_response_sm, tadpole{1,t}.sum_responses_sm ] = get_respondingROIs2( tadpole{1,t}.area_bytrial_sm, tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.peakloc_bytrial_sm )
 
     % Find average area, peak and peakloc for each ROI for each stim type
     [ tadpole{1,t}.area_avg_sm ] = mean_by_stimtype ( tadpole{1,t}.area_bytrial_sm, tadpole{1,t}.stimmask )
-    [ tadpole{1,t}.peak_avg_sm ] = mean_by_stimtype ( tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.stimmask )
-    [ tadpole{1,t}.peakloc_avg_sm ] = mean_by_stimtype ( tadpole{1,t}.peakloc_bytrial_sm, tadpole{1,t}.stimmask )
+    [ tadpole{1,t}.peak_avg_sm ] = mean_by_stimtype2 ( tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.stimmask )
+    [ tadpole{1,t}.peakloc_avg_sm ] = mean_by_stimtype2 ( tadpole{1,t}.peakloc_bytrial_sm, tadpole{1,t}.stimmask )
 
     % calculate MS enhancement
     % this is only on high/high presentations (1,2,3) because argh
@@ -85,16 +85,16 @@ peak_vals_toplot = [];
 for t = 1:length(tadpole)
     peak_vals_toplot = [peak_vals_toplot; [tadpole{1,t}.meanpeak_bytrial_sm(:)]];
 end
-peakvals_toplot = cell2mat(peak_vals_toplot);
-hist(peakvals_toplot, 1000)
-axes([0 100 0 10])
+%peakvals_toplot = cell2mat(peak_vals_toplot);
+hist(peak_vals_toplot, 1000)
+%axes([0 100 0 10])
 
 % find trials with peak bigger than 5 and eliminate
 for t = 1:length(tadpole)
     tadpole{1,t}.goodTrials = ones(size(tadpole{1,t}.meanpeak_bytrial_sm));
     for i = 1:size(tadpole{1,t}.meanpeak_bytrial_sm,1)
         for j = 1:size(tadpole{1,t}.meanpeak_bytrial_sm,2)
-            if tadpole{1,t}.meanpeak_bytrial_sm{i,j} > 5
+            if tadpole{1,t}.meanpeak_bytrial_sm(i,j) > 5
                 tadpole{1,t}.goodROIs(i,j) = 0;
             end
         end
@@ -107,7 +107,7 @@ for t = 1:length(tadpole)
     tadpole{1,t}.goodROIs = ones(size(tadpole{1,t}.meanpeak_bytrial_sm, 1), 1);
     
     for i = 1:size(tadpole{1,t}.meanpeak_bytrial_sm,1)
-        tmpdata = cell2mat(tadpole{1,t}.meanpeak_bytrial_sm(i,:));
+        tmpdata = tadpole{1,t}.meanpeak_bytrial_sm(i,:);
         findrois = find(tmpdata > 0.1) % && (tmpdata < 5));
             if length(findrois) < 4
                 tadpole{1,t}.goodROIs(i) = 0;

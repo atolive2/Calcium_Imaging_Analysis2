@@ -85,8 +85,8 @@ end
 % Gather all meanpeak values (peak +/-1 averaged) for all ROIs, all trials
 peak_allhistdata = [];
 for t = 1:length(tadpole)
-    num_data = size(tadpole{1,t}.meanpeak_bytrial_sm, 1) * size(tadpole{1,t}.meanpeak_bytrial_sm, 2);
-    trial_data = reshape(cell2mat(tadpole{1,t}.meanpeak_bytrial_sm), 1, num_data);
+    %num_data = size(tadpole{1,t}.meanpeak_bytrial_sm, 1) * size(tadpole{1,t}.meanpeak_bytrial_sm, 2);
+    trial_data = reshape(tadpole{1,t}.meanpeak_bytrial_sm, 1, []);
     peak_allhistdata = [peak_allhistdata trial_data];
     clear('trial_data', 'num_data')
 end
@@ -280,7 +280,7 @@ end
 total_pos = sum(pos_spontdiff)
 total_neg = sum(neg_spontdiff)
 prop_posspontdiff = pos_spontdiff ./ (neg_spontdiff + pos_spontdiff)
-
+bar(prop_posspontdiff)
 %% Proximity 
 % scatter plot and linear fit of euclid distance vs peak avg loc
 
