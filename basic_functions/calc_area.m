@@ -7,7 +7,7 @@ function [ area_bytrial ] = calc_area( signal, stimulus_start_frame )
 
 for i = 1:size(signal,1)
     for j = 1:size(signal,2)
-        area_bytrial{i,j}=trapz(signal{i,j}(stimulus_start_frame:end));
+        area_bytrial(i,j)=trapz(signal{i,j}(stimulus_start_frame:end-5));
     end
 end
 end

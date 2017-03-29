@@ -8,7 +8,8 @@ function [ avg ] = mean_by_stimtype ( bytrial, stimmask )
 for i = 1:size(stimmask,2) % over each stim type
     for j = 1:size(bytrial,1) %over each ROI
         %tmp_data = bytrial(:,stimmask(:,i))
-        avg(i,j) = mean(bytrial{j, stimmask(i,:)});
+        
+        avg(i,j) = mean(bytrial(j, stimmask(i,:)));
     end
 end
    

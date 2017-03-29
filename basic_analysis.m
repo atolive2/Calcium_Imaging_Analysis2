@@ -1,6 +1,6 @@
 %% basic properties (for committee meeting 2/22/2017)
 
-%% Poportion responding (using boolean_response)
+%% Proportion responding (using boolean_response)
 
 % Percent response by cell (all stims combined)
 t=1

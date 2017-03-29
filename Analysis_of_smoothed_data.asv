@@ -54,8 +54,8 @@ end
 for t = 1:length(tadpole)
     % Extract parameters for each trial
     [ tadpole{1,t}.area_bytrial_sm ] = calc_area( tadpole{1,t}.smoothed, 46 )
-    [ tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.peakloc_bytrial_sm] = calc_peak( tadpole{1,t}.smoothed)
-, tadpole{1,t}.peak_bytrial_sm 
+    [ tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.peakloc_bytrial_sm, tadpole{1,t}.peak_bytrial_sm ] = calc_peak( tadpole{1,t}.smoothed, 5, 5 )
+
     % Define response/no response
     [ tadpole{1,t}.boolean_response_sm, tadpole{1,t}.sum_responses_sm ] = get_respondingROIs( tadpole{1,t}.area_bytrial_sm, tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.peakloc_bytrial_sm )
 
