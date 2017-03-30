@@ -136,7 +136,104 @@ goodExp = prop_goodROIs > 0.2
 %% Analyse responding ROIs of good experiments only
 % good experiments: if goodExp(t)
 % good ROIs in good exps: if tadpole{1,t}.goodROIslog
+idx = 1
+for t = 1:length(tadpole)
+    if goodExp(t)
+        for r = 1:length(tadpole{1,t}.somaticROIs)
+            if tadpole{1,t}.goodROIslog(r)
+                goodtadpole(idx).exp = tadpole{1,t}.expnum;
+                goodtadpole(idx).roi = r;
+                goodtadpole(idx).smoothed_df_f0 = tadpole{1,t}.smoothed(r,:);
+                goodtadpole(idx).area_bytrial = cell2mat(tadpole{1,t}.area_bytrial_sm(r, :));
+                goodtadpole(idx).meanpeak_bytrial = tadpole{1,t}.meanpeak_bytrial_sm(r, :);
+                goodtadpole(idx).peakloc_bytrial = tadpole{1,t}.peakloc_bytrial_sm(r, :);
+                goodtadpole(idx).sum_responses = tadpole{1,t}.sum_responses_sm(r);
+                goodtadpole(idx).area_avg = tadpole{1,t}.area_avg_sm(:, r);
+                goodtadpole(idx).peak_avg = tadpole{1,t}.peak_avg_sm(:, r);
+                goodtadpole(idx).peakloc_avg = tadpole{1,t}.peakloc_avg_sm(:, r);
+                goodtadpole(idx).MSenh_peak = tadpole{1,t}.MSenh_peak_sm(r);
+                goodtadpole(idx).MSenh_peakloc = tadpole{1,t}.MSenh_peakloc_sm(r);
+                goodtadpole(idx).unimax_peakavg = tadpole{1,t}.unimax_peakavg_sm;
+                goodtadpole(idx).unimax_stimtype = tadpole{1,t}.unimax_stimtype_sm;
+                goodtadpole(idx).multimax_peakavg = tadpole{1,t}.multimax_peakavg_sm;
+                goodtadpole(idx).stimorder = tadpole{1,t}.stimorder;
+                goodtadpole(idx).roiloc = tadpole{1,t}.somaticROICenters{1,r}(1).Centroid;
+                idx = idx + 1
+            end
+            
+        end
+    end
+end
+
 
 %% Analysis of peak variability
 % calculate difference in peak latency for multisensory vs unisensory
-% calculate average peak for each category
+% calculate average peak latency for each category
+
+for r = 1:length(goodtadpole) % over all rois
+    uniquestims = unique(goodtadpole(r).stimorder);
+    for s = 1:length(uniquestims) % over each stim type
+        stimidx = uniquestims(s);
+        trials_touse = find(goodtadpole(r).stimorder == stimidx);
+        avg_peakloc(r, s) = mean(goodtadpole(r).peakloc_bytrial(1, trials_touse));
+        std_peakloc(r, s) = std(goodtadpole(r).peakloc_bytrial(1, trials_touse));
+    end
+end
+
+figure;
+errorbar(avg_peakloc(:,1), std_peakloc(:,1))
+figure;
+errorbar(avg_peakloc(:,2), std_peakloc(:,2))
+figure;
+errorbar(avg_peakloc(:,3), std_peakloc(:,3))
+
+figure;
+hold on
+errorbar(avg_peakloc(:,1), std_peakloc(:,1))
+errorbar(avg_peakloc(:,2), std_peakloc(:,2))
+errorbar(avg_peakloc(:,3), std_peakloc(:,3))
+errorbar(avg_peakloc(:,4), std_peakloc(:,4))
+hold off
+legend ('multi', 'vis', 'mech', 'no stim', 'orientation', 'horizontal')
+
+% 1 way anova with multiple conparisons on multi/vis/mech/no stim
+[ p, tbl, stats ] = anova1(avg_peakloc(:,1:4))
+[results, means] = multcompare(stats,'CType','bonferroni')
+
+% run 1 way anova on uni versus multi only
+uniavg = mean(avg_peakloc(:,2:3)');
+totestdata = [avg_peakloc(:,1) uniavg']
+[ p_um, tbl_um, stats_um ] = anova1(totestdata)
+% p = 0.06 so not significant. 
+
+% figure
+multi_X = 0.7 + rand(1,319)*(1.3-0.7)
+vis_X = 1.7 + rand(1,319)*(2.3-1.7)
+mech_X = 2.7 + rand(1,319)*(3.3-2.7)
+none_X = 3.7 + rand(1,319)*(4.3-3.7)
+% plot means with stdev of means
+avgof_avgpeakloc = mean(avg_peakloc) 
+stdof_avgpeakloc = std(avg_peakloc) 
+
+figure;
+hold on
+% all means as circles
+scatter(multi_X, avg_peakloc(:,1))
+scatter(vis_X, avg_peakloc(:,2))
+scatter(mech_X, avg_peakloc(:,3))
+scatter(none_X, avg_peakloc(:,4))
+errorbar(avgof_avgpeakloc(1:4), stdof_avgpeakloc(1:4), 'ob', 'linewidth', 2, 'Markersize', 10, 'MarkerFaceColor', 'b') % mean with stdev
+hold off
+title('Mean Peak Location')
+ylabel('Peak Location in seconds')
+ax=gca;
+xsize = 160
+ax.YTick = [0, xsize/7, (xsize/7)*2, (xsize/7)*3, (xsize/7)*4, (xsize/7)*5, (xsize/7)*6, (xsize/7)*7];
+ax.YTickLabel = {'0','1', '2', '3', '4', '5', '6', '7'};
+xlabel('Stimulus Type')
+ax.XTick = [1, 2, 3, 4];
+ax.XTickLabel = {'Multi','Visual', 'Mech', 'None'};
+fig_filename='Mean Peak Location RespROIs only';
+saveas(gcf,fig_filename,'png');
+
+% calculate difference in variation within trials of a single ROI
