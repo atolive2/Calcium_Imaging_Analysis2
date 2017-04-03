@@ -716,8 +716,39 @@ saveas(gcf, fig_filename, 'epsc2')
 % peak location maps onto color
 % get goodtadpole(:).peakloc_avg and roilocs_exp6 into a matrix together
 
+prox_analysis = [goodtadpole(172:298).peakloc_avg]
+%prox_analysis_colormap = prox_analysis * 64/160
 
+prox_analysis = [prox_analysis; roi_locs_exp6];
+colors = [0:(1/127):1; zeros(1,128); fliplr(0:(1/127):1)]
+colors_touse = colors(:, 1:127)'
+figure;
+scatter(prox_analysise6MSsort(2, :), prox_analysise6MSsort(3,:), [], colors_touse, 'filled')
+fig_filename = 'Tectum-shaped scatter by peak loc MS exp6'
+saveas(gcf, fig_filename, 'epsc2')
+% blue = earliest peak loc, red = latest peak loc
+figure;
+scatter(prox_analysis_Msort(2, :), prox_analysis_Msort(3,:), [], colors_touse, 'filled')
+fig_filename = 'Tectum-shaped scatter by peak loc M exp6'
+saveas(gcf, fig_filename, 'epsc2')
 
+figure;
+scatter(prox_analysis_Vsort(2, :), prox_analysis_Vsort(3,:), [], colors_touse, 'filled')
+fig_filename = 'Tectum-shaped scatter by peak loc V exp6'
+saveas(gcf, fig_filename, 'epsc2')
+
+%% High/low intensity analysis - exp 22 and 23 only 
+% CSHL 2017 poster figure 10
+responses = sum(tadpole{6}.boolean_response_sm')
+count_responses = length(find(responses))
+responses23 = sum(tadpole{7}.boolean_response_sm')
+count_responses = length(find(responses23))
+% 10 responding ROIs total - not enough.
+
+%% simultaneous vs offset - exp 24, tadpole 8
+responses = sum(tadpole{8}.boolean_response_sm')
+count_responses = length(find(responses))
+% 13 responding ROIs total. not enough
 
 %% Do "basic" analysis on just "good" rois and exps (using goodtadpole)
 % Figure 6 of CSHL 2017 poster
