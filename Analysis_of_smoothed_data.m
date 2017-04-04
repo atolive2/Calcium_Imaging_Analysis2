@@ -722,6 +722,45 @@ prox_analysis = [goodtadpole(172:298).peakloc_avg]
 prox_analysis = [prox_analysis; roi_locs_exp6];
 colors = [0:(1/127):1; zeros(1,128); fliplr(0:(1/127):1)]
 colors_touse = colors(:, 1:127)'
+
+colors_touse = colormap('jet')
+% too short - need to map into 127 colors or turn 127 ROIs into64 colors.
+max_peakloc6 = max(prox_analysis(1:3, :)')
+min_peakloc6 = min(prox_analysis(1:3, :)')
+% range_peakloc6 = [ 4 156 ] % range is 152
+
+% convert the range of my peak loc values to range of 64 (so multiply by
+% 64/160)
+prox_analysise6MSsort_adj = floor(prox_analysise6MSsort(1,:) * (64/160))
+prox_analysis_Msort_adj = floor(prox_analysis_Msort(1,:) * (64/160))
+prox_analysis_Vsort_adj = floor(prox_analysis_Vsort(1,:) * (64/160))
+
+% make figure using jet colormap. Index in by prox_analysis_Vsort_adj
+figure;
+scatter(prox_analysise6MSsort(2, :), prox_analysise6MSsort(3,:), 60, colors_touse(prox_analysise6MSsort_adj, :), 'filled')
+colormap jet
+colorbar('southoutside', 'Ticks', [0 0.5 1], 'TickLabels', {'0 sec', '3 sec', '7 sec'})
+fig_filename = 'Tectum-shaped scatter by peak loc MS exp6 jet'
+saveas(gcf, fig_filename, 'epsc2')
+
+
+figure;
+scatter(prox_analysis_Msort(2, :), prox_analysis_Msort(3,:), 60, colors_touse(prox_analysis_Msort_adj, :), 'filled')
+colormap jet
+colorbar('southoutside', 'Ticks', [0 0.5 1], 'TickLabels', {'0 sec', '3 sec', '7 sec'})
+fig_filename = 'Tectum-shaped scatter by peak loc M exp6 jet'
+saveas(gcf, fig_filename, 'epsc2')
+
+figure;
+scatter(prox_analysis_Vsort(2, :), prox_analysis_Vsort(3,:), 60, colors_touse(prox_analysis_Vsort_adj, :), 'filled')
+colormap jet
+colorbar('southoutside', 'Ticks', [0 0.5 1], 'TickLabels', {'0 sec', '3 sec', '7 sec'})
+fig_filename = 'Tectum-shaped scatter by peak loc V exp6 jet'
+saveas(gcf, fig_filename, 'epsc2')
+
+
+
+% old figures
 figure;
 scatter(prox_analysise6MSsort(2, :), prox_analysise6MSsort(3,:), [], colors_touse, 'filled')
 fig_filename = 'Tectum-shaped scatter by peak loc MS exp6'
@@ -782,7 +821,7 @@ for s = 1:4
     title(sprintf('Proportion of trials with response > 0.1 %d', s));
     xlabel('Proportion of trials')
     ylabel('Counts')
-    axis([0 1 -inf inf])
+    axis([0 1 0 80])
     clear('type')
     fig_filename = sprintf('Prop_respROIs_respond%d', s)
     saveas(gcf,fig_filename,'epsc2');
@@ -858,6 +897,14 @@ ax.XTickLabel = {'Multi', 'Vis', 'Mech', 'No stim'};
 fig_filename='Percent prim_mod_byexp';
 
 saveas(gcf,fig_filename,'epsc2');
+
+% Change primary modality pie chart + scatterplot into stacked bar graph by
+% exp
+bar(prim_mod_pie_byexp_percent, 'stacked')
+ylabel('Proportion of cells')
+fig_filename = 'Primary modality all exps stacked bar'
+saveas(gcf, fig_filename, 'epsc2')
+
 
 % for example
 

@@ -67,7 +67,7 @@ end
 tadpole{1,16}.spikeTimes = spikeTimes_e25c1
 tadpole{1,17}.spikeTimes = spikeTimes_e25c2
 tadpole{1,18}.spikeTimes = spikeTimes_e26c1
-tadpole{1,19}.spikeTimes = spikeTimes_e26c2
+tadpole{1,19}.spikeTimes = spikeTimes_e26c211
 tadpole{1,20}.spikeTimes = spikeTimes_e27t1c1
 tadpole{1,21}.spikeTimes = spikeTimes_e27t2c1
 tadpole{1,22}.spikeTimes = spikeTimes_e27t2c1
@@ -289,8 +289,8 @@ ax.XTickLabel = {'0','1', '2', '3', '4', '5', '6', '7'};
 title('Mean and SD of all traces with 0 spikes');
 xlabel('time(s)');
 ylabel('smoothed \DeltaF/F_{0}');
-fig_filename=sprintf(['F:/Calcium_Imaging_Analysis/cell_attached_files/Spring2017analysis/figures/' 'Mean_and_SD_smoothed_df_f0_%dspikes.png'], 0);
-saveas(gcf,fig_filename,'png');
+fig_filename= 'Mean_and_SD_smoothed_df_f0_0spikes_xadj' %sprintf(['F:/Calcium_Imaging_Analysis/cell_attached_files/Spring2017analysis/figures/' 'Mean_and_SD_smoothed_df_f0_%dspikes.png'], 0);
+saveas(gcf,fig_filename,'epsc2');
 %close;
 clear('fig_filename')
 
@@ -394,6 +394,79 @@ ylabel('smoothed \DeltaF/F_{0}');
 xlabel('time(s)');
 legend('0 spikes', '1 spike', '2 spikes', '3 spikes', '4 spikes', '5 spikes', '6 spikes', '7 spike', '8 spikes', 'Spike time', 'Orientation', 'vertical')
 
+% plot peak of mean trace by spike count
+peaks_spiketrg_avg = max(Mean_traces')
+spikecount = [0:8]
+%add rational function
+spikecount_RF = [0:0.2:8]
+p1 = 0.1971
+p2 = 0.04119
+q1 = 0.8741
+for i = 1:length(spikecount_RF)
+    rational_fcn(i) = (p1*spikecount_RF(i) + p2)/(spikecount_RF(i) + q1)
+end
+% rational function conf ints
+p1l = 0.1249
+p2l = -0.1033
+q1l = -1.384
+for i = 1:length(spikecount_RF)
+    rational_fcnl(i) = (p1l*spikecount_RF(i) + p2l)/(spikecount_RF(i) + q1l)
+end
+
+p1u = 0.2693
+p2u = 0.1857
+q1u = 3.132
+for i = 1:length(spikecount_RF)
+    rational_fcnu(i) = (p1u*spikecount_RF(i) + p2u)/(spikecount_RF(i) + q1u)
+end
+
+figure;
+hold on
+plot(spikecount, peaks_spiketrg_avg, 'ok')
+%ciplot(rational_fcnl, rational_fcnu, spikecount_RF, 'b'); % this looks
+%terrible. 
+plot(spikecount_RF, rational_fcn)
+hold off
+fig_filename = 'peak of mean spike trg avg with rational fcn'
+saveas(gcf, fig_filename, 'epsc2')
+
+% add SD of peak to graph
+% this looks terrible. 
+% 1-8 spikes
+for i = 2:9
+    count = i-1
+    idxs = find([CellsAll.spikeCount] == count)
+    for k = 1:length(idxs)
+        if CellsAll(idxs(k)).spikeFrames(1,1) > 95 || CellsAll(idxs(k)).spikeFrames(1,1) < 30
+            idxs(k) = 0
+        end
+    end
+
+    for k = 1:length(idxs)
+        if idxs(k) ~= 0
+            if min(CellsAll(idxs(k)).trace(:,:)) < -0.2 
+                idxs(k) = 0
+            end
+        end
+    end
+    for j = 1:length(idxs)
+        if idxs(j) ~= 0 
+            Peaks_byspikect{i}(j) = max(CellsAll(idxs(j)).trace(:,:));
+        end
+    end
+end
+idxs = find([CellsAll.spikeCount] == 0);
+for y = 1:length(idxs)
+    Peaks_byspikect{1}(y) = max(CellsAll(idxs(y)).trace((start-30):(start+60), 1));
+end
+
+for i = 1:length(Peaks_byspikect)
+    Peaks_byspikect_avg(i) = mean(Peaks_byspikect{i})
+    Peaks_byspikect_sd(i) = std(Peaks_byspikect{i})
+end
+
+errorbar(peaks_spiketrg_avg, Peaks_byspikect_sd);
+
 %% plot spike count vs peak df/f0 for traces with no prestim activity
 
 figure;
@@ -419,6 +492,39 @@ hold off
 ylabel('\DeltaF/F_{0}')
 xlabel('spike count')
 title('All traces without pre-stim spikes')
+
+
+% get spike count vs dff0 data to use for curve fitting tool
+for c = 1:length(CellsAll)
+    if CellsAll(c).earlySpikes == 0
+        spkct_all(c) = length(CellsAll(c).spikeFrames);
+        dff0_all(c) = max(CellsAll(c).trace);
+        %plot(spkct, dff0, 'k*')
+        %spikesvs = [spikesvs; spkct];
+        %dff0vs = [dff0vs; dff0]
+    end
+end
+
+% rational function with 1 degree in denom and 1 degree in num looks best. 
+% replot with the rational function
+X_pts = 0:25
+p1 = 0.3545
+p2 = 0.2881
+q1 = 3.836
+for i = 1:length(X_pts)
+    rational_fcn(i) = (p1*X_pts(i) + p2)/(X_pts(i) + q1)
+end
+
+figure;
+hold on
+plot(spkct_all, dff0_all, 'k*')
+plot(X_pts, rational_fcn)
+hold off
+ylabel('\DeltaF/F_{0}')
+xlabel('spike count')
+title('All traces without pre-stim spikes')
+fig_filename = 'All traces without prestim spikes rational fcn'
+saveas(gcf, fig_filename, 'epsc2')
 
 % Plot mean and std dev of each spike count 
 % get mean and sd for spike counts with more than 1 trace, if no early
