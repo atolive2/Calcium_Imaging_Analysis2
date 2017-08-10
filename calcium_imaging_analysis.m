@@ -22,13 +22,13 @@
 % Change the name of importedStack to reflect the trial number
 
 % Then concatenate all trial blocks with the same field of view
-flatStack=cat(3, importedStack1, importedStack2);
+flatStack=cat(3, importedStack2, importedStack3);
 flatStack=cat(3, flatStack, importedStack3); %repeat for all importedStacks
 flatStack=cat(3, flatStack, importedStack4);
 flatStack=cat(3, flatStack, importedStack5);
 flatStack=cat(3, flatStack, importedStack6);
 flatStack=cat(3, flatStack, importedStack7);
-flatStack=cat(3, flatStack, importedStack9);
+flatStack=cat(3, flatStack, importedStack8);
 %resulting file should be 500x502xsum(frames) and type uint16 if using 2x2 bin on original
 %data
 
@@ -139,7 +139,7 @@ tadpole.figure_filepath=[tadpole.filepath 'figures/']
 %9. number of trials in a block
 tadpole.num_trials=12
 %10. what blocks is this?
-%tadpole.blockids = [ 3 4 5 6 7 ]
+tadpole.blockids = [ 3 4 5 6 7 ]
 %what cell number?
 %tadpole.cellid = 6
 
