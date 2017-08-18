@@ -136,11 +136,13 @@ for t = 1:length(tadcluster)
 end
 
 % none
+        colormap('hot')
+        %colormap(flipud(colormap))
 for t = 1:length(tadcluster)
     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
         figure;
         colormap('hot')
-        colormap(flipud(colormap))
+        %colormap(flipud(colormap))
         imagesc(tadcluster{1,t}.respROIdff0_bystimtype_N_P)
         colorbar
         title(sprintf('tad %d responding cells P vals correlations using no stim df/f0', t))
@@ -287,17 +289,162 @@ end
 
 %% Divide correlations into groups (low/mid/high) and plot distance
 
-t = 1
+for t = 1:length(tadcluster)
+    % get Pvals for all modalities combined
+    tadcluster{1,t}.respROI_Pvals_low = get_subset_pvals(0, 0.01, tadcluster{1,t}.respROIdff0_P);
+    tadcluster{1,t}.respROI_Pvals_med = get_subset_pvals(0.4, 0.6, tadcluster{1,t}.respROIdff0_P);
+    tadcluster{1,t}.respROI_Pvals_high = get_subset_pvals(0.8, 1, tadcluster{1,t}.respROIdff0_P);
+    
+    % get pairwise distances for each Pval subset
+    tadcluster{1,t}.respROI_Pvals_low_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_Pvals_low, 1, tadcluster{1,t}.resp_ROIs);
+    tadcluster{1,t}.respROI_Pvals_med_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_Pvals_med, 1, tadcluster{1,t}.resp_ROIs);
+    tadcluster{1,t}.respROI_Pvals_high_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_Pvals_high, 1, tadcluster{1,t}.resp_ROIs);
+end 
 
-[tadcluster{1,t}.Pvals_low(:,1), tadcluster{1,t}.Pvals_low(:,2)] = find(tadcluster{1,t}.respROIdff0_P < 0.01)
+% Plot the distance between the cells in each category
+for t = 1:length(tadcluster)
+    if sum(size(tadcluster{1,t}.respROI_Pvals_low_pairdist)) > 1 && sum(size(tadcluster{1,t}.respROI_Pvals_med_pairdist)) > 1 && sum(size(tadcluster{1,t}.respROI_Pvals_high_pairdist)) > 1
+    % create X vals
+    xval_low = ones(size(tadcluster{1,t}.respROI_Pvals_low_pairdist,1), 1)
+    xval_med = 2* ones(size(tadcluster{1,t}.respROI_Pvals_med_pairdist,1), 1)
+    xval_high = 3* ones(size(tadcluster{1,t}.respROI_Pvals_high_pairdist,1), 1)
+    figure;
+    hold on
+    scatter(xval_low, tadcluster{1,t}.respROI_Pvals_low_pairdist(:,3))
+    scatter(xval_med, tadcluster{1,t}.respROI_Pvals_med_pairdist(:,3))
+    scatter(xval_high, tadcluster{1,t}.respROI_Pvals_high_pairdist(:,3))
+    %errorbar(avgof_avgpeakloc(1:4), stdof_avgpeakloc(1:4), 'ob', 'linewidth', 2, 'Markersize', 10, 'MarkerFaceColor', 'b') % mean with stdev
 
-% bad syntax. 
-[tadcluster{1,t}.Pvals_med(:,1), tadcluster{1,t}.Pvals_med(:,2)] = find(0.4 < tadcluster{1,t}.respROIdff0_P < 0.6)
-[tadcluster{1,t}.Pvals_high(:,1), tadcluster{1,t}.Pvals_high(:,2)] = tadcluster{1,t}.respROIdff0_P((tadcluster{1,t}.respROIdff0_P > 0.8) && (tadcluster{1,t}.respROIdff0_P < 1))
+    hold off
+    title(sprintf('ROI distances by P value exp %d', t))
+    ax=gca;
+    ax.XTick = [1, 2, 3]
+    ax.XTickLabel = {'low', 'med', 'high'}
+    xlabel('P val category')
+    ylabel('distance (pixels)')
+    xlim([0.5 3.5])
+    fig_filename = sprintf('ROI distances by P value exp %d', t)
+    saveas(gcf,fig_filename,'png');
+    close;
+    end
+end
 
+%% Repeat dividing correlations into groups by p values but using by-modality stimulus presented data
 
+for t = 1:length(tadcluster)
+    % get Pvals for all modalities combined
+    if length(find(tadcluster{1,t}.stimorder == 1)) > 1 %this eliminates experiments without high/high MS trials
+        %Multi
+        tadcluster{1,t}.respROI_bystimtype_MS_Pvals_low = get_subset_pvals(0, 0.01, tadcluster{1,t}.respROIdff0_bystimtype_MS_P);
+        tadcluster{1,t}.respROI_bystimtype_MS_Pvals_med = get_subset_pvals(0.4, 0.6, tadcluster{1,t}.respROIdff0_bystimtype_MS_P);
+        tadcluster{1,t}.respROI_bystimtype_MS_Pvals_high = get_subset_pvals(0.8, 1, tadcluster{1,t}.respROIdff0_bystimtype_MS_P);
+        %Vis
+        tadcluster{1,t}.respROI_bystimtype_V_Pvals_low = get_subset_pvals(0, 0.01, tadcluster{1,t}.respROIdff0_bystimtype_V_P);
+        tadcluster{1,t}.respROI_bystimtype_V_Pvals_med = get_subset_pvals(0.4, 0.6, tadcluster{1,t}.respROIdff0_bystimtype_V_P);
+        tadcluster{1,t}.respROI_bystimtype_V_Pvals_high = get_subset_pvals(0.8, 1, tadcluster{1,t}.respROIdff0_bystimtype_V_P);
+        %Mech
+        tadcluster{1,t}.respROI_bystimtype_M_Pvals_low = get_subset_pvals(0, 0.01, tadcluster{1,t}.respROIdff0_bystimtype_M_P);
+        tadcluster{1,t}.respROI_bystimtype_M_Pvals_med = get_subset_pvals(0.4, 0.6, tadcluster{1,t}.respROIdff0_bystimtype_M_P);
+        tadcluster{1,t}.respROI_bystimtype_M_Pvals_high = get_subset_pvals(0.8, 1, tadcluster{1,t}.respROIdff0_bystimtype_M_P);
+        %none
+        tadcluster{1,t}.respROI_bystimtype_N_Pvals_low = get_subset_pvals(0, 0.01, tadcluster{1,t}.respROIdff0_bystimtype_N_P);
+        tadcluster{1,t}.respROI_bystimtype_N_Pvals_med = get_subset_pvals(0.4, 0.6, tadcluster{1,t}.respROIdff0_bystimtype_N_P);
+        tadcluster{1,t}.respROI_bystimtype_N_Pvals_high = get_subset_pvals(0.8, 1, tadcluster{1,t}.respROIdff0_bystimtype_N_P);
 
+        % get pairwise distances for each Pval subset
+        %multi
+        tadcluster{1,t}.respROI_bystimtype_MS_Pvals_low_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_MS_Pvals_low, 1, tadcluster{1,t}.resp_ROIs);
+        tadcluster{1,t}.respROI_bystimtype_MS_Pvals_med_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_MS_Pvals_med, 1, tadcluster{1,t}.resp_ROIs);
+        tadcluster{1,t}.respROI_bystimtype_MS_Pvals_high_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_MS_Pvals_high, 1, tadcluster{1,t}.resp_ROIs);
+        %vis
+        tadcluster{1,t}.respROI_bystimtype_V_Pvals_low_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_V_Pvals_low, 1, tadcluster{1,t}.resp_ROIs);
+        tadcluster{1,t}.respROI_bystimtype_V_Pvals_med_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_V_Pvals_med, 1, tadcluster{1,t}.resp_ROIs);
+        tadcluster{1,t}.respROI_bystimtype_V_Pvals_high_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_V_Pvals_high, 1, tadcluster{1,t}.resp_ROIs);
+        %mech
+        tadcluster{1,t}.respROI_bystimtype_M_Pvals_low_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_M_Pvals_low, 1, tadcluster{1,t}.resp_ROIs);
+        tadcluster{1,t}.respROI_bystimtype_M_Pvals_med_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_M_Pvals_med, 1, tadcluster{1,t}.resp_ROIs);
+        tadcluster{1,t}.respROI_bystimtype_M_Pvals_high_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_M_Pvals_high, 1, tadcluster{1,t}.resp_ROIs);
+        %none
+        tadcluster{1,t}.respROI_bystimtype_N_Pvals_low_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_N_Pvals_low, 1, tadcluster{1,t}.resp_ROIs);
+        tadcluster{1,t}.respROI_bystimtype_N_Pvals_med_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_N_Pvals_med, 1, tadcluster{1,t}.resp_ROIs);
+        tadcluster{1,t}.respROI_bystimtype_N_Pvals_high_pairdist = get_pairwise_distances(tadcluster{1,t}.ROIdist, tadcluster{1,t}.respROI_bystimtype_N_Pvals_high, 1, tadcluster{1,t}.resp_ROIs);
+    end
+end
 
+% Plot the distance between the cells in each category
+for t = 1:length(tadcluster)
+    if length(find(tadcluster{1,t}.stimorder == 1)) > 1 %this eliminates experiments without high/high MS trials
+        if ~isempty(tadcluster{1,t}.respROI_bystimtype_N_Pvals_low_pairdist) && ~isempty(tadcluster{1,t}.respROI_bystimtype_N_Pvals_med_pairdist) && ~isempty(tadcluster{1,t}.respROI_bystimtype_N_Pvals_high_pairdist)...
+                && ~isempty(tadcluster{1,t}.respROI_bystimtype_MS_Pvals_low_pairdist) && ~isempty(tadcluster{1,t}.respROI_bystimtype_MS_Pvals_med_pairdist) && ~isempty(tadcluster{1,t}.respROI_bystimtype_MS_Pvals_high_pairdist) % eliminate exps with no P vals in a category.
+            figure;
+            %multi
+            subplot(2,2,1)
+            hold on
+            scatter(ones(size(tadcluster{1,t}.respROI_bystimtype_MS_Pvals_low_pairdist,1), 1), tadcluster{1,t}.respROI_bystimtype_MS_Pvals_low_pairdist(:,3))
+            scatter((2* ones(size(tadcluster{1,t}.respROI_bystimtype_MS_Pvals_med_pairdist,1), 1)), tadcluster{1,t}.respROI_bystimtype_MS_Pvals_med_pairdist(:,3))
+            scatter((3* ones(size(tadcluster{1,t}.respROI_bystimtype_MS_Pvals_high_pairdist,1), 1)), tadcluster{1,t}.respROI_bystimtype_MS_Pvals_high_pairdist(:,3))
+            hold off
+            title('multi')
+            ax=gca;
+            ax.XTick = [1, 2, 3]
+            ax.XTickLabel = {'low', 'med', 'high'}
+            xlabel('P val category')
+            ylabel('distance (pixels)')
+            xlim([0.5 3.5])
+
+            %vis
+            subplot(2,2,2)
+            hold on
+            scatter(ones(size(tadcluster{1,t}.respROI_bystimtype_V_Pvals_low_pairdist,1), 1), tadcluster{1,t}.respROI_bystimtype_V_Pvals_low_pairdist(:,3))
+            scatter((2* ones(size(tadcluster{1,t}.respROI_bystimtype_V_Pvals_med_pairdist,1), 1)), tadcluster{1,t}.respROI_bystimtype_V_Pvals_med_pairdist(:,3))
+            scatter((3* ones(size(tadcluster{1,t}.respROI_bystimtype_V_Pvals_high_pairdist,1), 1)), tadcluster{1,t}.respROI_bystimtype_V_Pvals_high_pairdist(:,3))
+            hold off
+            title('visual')
+            ax=gca;
+            ax.XTick = [1, 2, 3]
+            ax.XTickLabel = {'low', 'med', 'high'}
+            xlabel('P val category')
+            ylabel('distance (pixels)')
+            xlim([0.5 3.5])
+
+            %mech
+            subplot(2,2,3)
+            hold on
+            scatter(ones(size(tadcluster{1,t}.respROI_bystimtype_M_Pvals_low_pairdist,1), 1), tadcluster{1,t}.respROI_bystimtype_M_Pvals_low_pairdist(:,3))
+            scatter((2* ones(size(tadcluster{1,t}.respROI_bystimtype_M_Pvals_med_pairdist,1), 1)), tadcluster{1,t}.respROI_bystimtype_M_Pvals_med_pairdist(:,3))
+            scatter((3* ones(size(tadcluster{1,t}.respROI_bystimtype_M_Pvals_high_pairdist,1), 1)), tadcluster{1,t}.respROI_bystimtype_M_Pvals_high_pairdist(:,3))
+            hold off
+            title('mech')
+            ax=gca;
+            ax.XTick = [1, 2, 3]
+            ax.XTickLabel = {'low', 'med', 'high'}
+            xlabel('P val category')
+            ylabel('distance (pixels)')
+            xlim([0.5 3.5])
+
+            %none
+            subplot(2,2,4)
+            hold on
+            scatter(ones(size(tadcluster{1,t}.respROI_bystimtype_N_Pvals_low_pairdist,1), 1), tadcluster{1,t}.respROI_bystimtype_N_Pvals_low_pairdist(:,3))
+            scatter((2* ones(size(tadcluster{1,t}.respROI_bystimtype_N_Pvals_med_pairdist,1), 1)), tadcluster{1,t}.respROI_bystimtype_N_Pvals_med_pairdist(:,3))
+            scatter((3* ones(size(tadcluster{1,t}.respROI_bystimtype_N_Pvals_high_pairdist,1), 1)), tadcluster{1,t}.respROI_bystimtype_N_Pvals_high_pairdist(:,3))
+            hold off
+            title('none')
+            ax=gca;
+            ax.XTick = [1, 2, 3]
+            ax.XTickLabel = {'low', 'med', 'high'}
+            xlabel('P val category')
+            ylabel('distance (pixels)')
+            xlim([0.5 3.5])
+
+            suptitle(sprintf('ROI distances by P value split by modality presented exp %d', t))
+            fig_filename = sprintf('ROI distances by P value split by modality presented exp %d', t)
+            saveas(gcf,fig_filename,'png');
+            close;
+        end
+    end
+    
+end
 
 
 
