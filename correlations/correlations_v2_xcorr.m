@@ -478,6 +478,112 @@ for t = 1:length(tadcluster)
    end
 end
 
+% Determine the ROIs that are the same across all cells with significant
+% overlap with a given ROI
+% significan overlap = at least 1/6*total num ROIS in correlated_ROIs_alldff0_int
+clear('lens', 'int', 'roi_count')
+for t = 1:length(tadcluster)
+    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
+        if length(tadcluster{1,t}.resp_ROIs) > 0
+            roi_count = (1/6)*length(tadcluster{1,t}.resp_ROIs);
+            for row = 1:size(tadcluster{1,t}.correlated_ROIs_alldff0_int,1)
+                for ct = 1:size(tadcluster{1,t}.correlated_ROIs_alldff0_int,2)
+                    lens(ct) = length(tadcluster{1,t}.correlated_ROIs_alldff0_int{ct,row});
+                end
+                first_roi = find((lens > roi_count), 1)
+                if isempty(first_roi) 
+                    continue
+                else
+                    int = tadcluster{1,t}.correlated_ROIs_alldff0_int{row, first_roi}
+
+                    for col = first_roi:size(tadcluster{1,t}.correlated_ROIs_alldff0_int,2)
+                        if lens(col) > roi_count
+                            int = intersect(int, tadcluster{1,t}.correlated_ROIs_alldff0_int{row, col});
+                        else
+                            continue
+                        end
+                    end
+                tadcluster{1,t}.correlated_ROIs_alldff0_common{row} = int;
+                end
+                clear('lens', 'int')
+            end
+            clear('roi_count')
+        end
+    end
+end
+
+%% plot tectum-shaped scatter plot of the ROIs remaining in an intersection
+
+% first take the ROI numbers and index them to the actual ROIs 
+for t = 1:length(tadcluster)
+    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
+        if isfield(tadcluster{1,t}, 'correlated_ROIs_alldff0_common')
+            roi_list = tadcluster{1,t}.resp_ROIs;
+            for i = 1:length(tadcluster{1,t}.correlated_ROIs_alldff0_common)
+                if ~isempty(tadcluster{1,t}.correlated_ROIs_alldff0_common(i))
+                    tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI{i} = roi_list(tadcluster{1,t}.correlated_ROIs_alldff0_common{i});
+                end
+            end
+        end
+        clear('roi_list')
+    end
+end
+
+
+% now generate input data for scatter(x,y) and plot
+
+for t = 1:length(tadcluster)
+    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
+        if isfield(tadcluster{1,t}, 'correlated_ROIs_alldff0_common_AROI')
+            rois = [];
+            list = [];
+            for i = 1:length(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI)
+                rois = [rois tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI{i}'] %all ROIs in all groups
+                if ~isempty(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI{i})
+                    list = [list tadcluster{1,t}.resp_ROIs(i)]; %the ROIs we're using for the groups
+                else
+                    continue
+                end
+            end
+            xy_data = tadcluster{1,t}.ROIcenters(rois,:); %get ROI centers for all ROIs being included
+            % change size for each ROI-based cluster
+            sizes = [];
+            N = 1;
+            for j = 1:length(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI)
+                if ~isempty(tadcluster{1,t}.correlated_ROIs_alldff0_common{j})
+                    len=length(tadcluster{1,t}.correlated_ROIs_alldff0_common{j});
+                    sizes = [sizes; N*ones(len,1)] ;
+                    N = N+1;
+                end
+            end
+            plot_sizes = (1 ./ sizes) * 1000;
+            %assign colors to each cluster
+            cmap = colormap(jet(N-1));
+            cluster_colors = cmap(sizes, :);
+            figure;
+            hold on
+            scatter(tadcluster{1,t}.ROIcenters(:,1), tadcluster{1,t}.ROIcenters(:,2), '+', 'MarkerEdgeColor', 'k')
+            scatter(tadcluster{1,t}.ROIcenters(tadcluster{1,t}.resp_ROIs,1), tadcluster{1,t}.ROIcenters(tadcluster{1,t}.resp_ROIs,2), 'o', 'MarkerEdgeColor', 'b')
+            scatter(xy_data(:,1), xy_data(:,2), plot_sizes, cluster_colors, 'filled')
+            hold off
+            % add text box with list of ROIs
+            dim = [0.15 0.1 .2 .2];
+            L = length(list);
+            str = sprintf('%s\n%s\n%s\n%s', num2str(list(1:floor(L/4))), num2str(list((ceil(L/4)+1):floor(2*L/4))), num2str(list((ceil((2*L/4)+1):floor(3*L/4)))), num2str(list((ceil((3*L/4)+1):end)))) 
+            annotation('textbox',dim,'String',str,'LineStyle', 'none', 'FitBoxToText', 'on');
+            title(sprintf('tad %d ROIs in a cluster', t))
+            fig_filename = sprintf('tad %d ROIs in a cluster', t)
+            saveas(gcf,fig_filename,'png');
+            close;
+            clear('cmap', 'cluster_colors', 'dim', 'str', 'plot_sizes', 'xy_data', 'len', 'L');
+        end
+    end
+end
+
+
+%% What features are similar among groups of cells that cluster?
+
+
 
 
 %% Are there more correlated cells with multi vs uni?
