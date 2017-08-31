@@ -251,3 +251,162 @@ for i = 1:length(roi_order)
     title(sprintf('tad %d (%d) tectum by respROIs MDS color', i, enoughROItads{i}(1,1)))
 end
 
+%% Plot MDS coordinates colored by primary modality
+% use enoughROItads to calculate primary modality as the maximum average
+% peak
+for i = 1:length(enoughROItads)
+    [PrimaryMod{i}(:,1), PrimaryMod{i}(:,2)] = max(enoughROItads{i}(:,3:6),[],2);
+end
+
+% generate color list based on primary modality
+for i = 1:length(PrimaryMod)
+    for j = 1:size(PrimaryMod{i})
+    if PrimaryMod{i}(j,2) == 1 %multi
+        Colors{i}(j,:) = [1 0 1]; %purple
+    elseif PrimaryMod{i}(j,2) == 2 %vis
+        Colors{i}(j,:) = [0 0 1]; %blue
+    elseif PrimaryMod{i}(j,2) == 3 %mech
+        Colors{i}(j,:) = [1 0 0]; %red
+    elseif PrimaryMod{i}(j,2) == 4 %no stim
+        Colors{i}(j,:) = [0.5 0.5 0.5]; %gray
+    end
+    end
+end
+
+%plot Y with colors from Colors
+for i = 1:length(Y)
+    figure;
+    scatter(Y_B{i}(:,1), Y_B{i}(:,2), 50, Colors{i}, 'filled')
+    title(sprintf('tad %d (%d) 2D MDS respROIs colored by Primary Modality', i, enoughROItads{i}(1,1)))
+    xlabel('MDS dim 1')
+    ylabel('MDS dim 2')
+    annotation('textbox', 'Position', [0.7 0.75 .1 .1], 'String', ['Multi'], 'Color', 'm', 'LineStyle', 'none' );
+    annotation('textbox', 'Position', [0.7 0.7 .1 .1], 'String', ['Vis'], 'Color', 'b', 'LineStyle', 'none' );
+    annotation('textbox', 'Position', [0.7 0.65 .1 .1], 'String', ['Mech'], 'Color', 'r', 'LineStyle', 'none' );
+    fig_filename = sprintf('tad %d (%d) 2D MDS respROIs colored by Primary Modality', i, enoughROItads{i}(1,1))
+    saveas(gcf, fig_filename, 'png')
+    close;
+end
+
+%% Plot relationship between topographical distance and MDS distance 
+% all cells on 1 plot, color by experiment
+
+% get MDS distance between ROIs
+for i = 1:length(Y)
+     Y_Distance{i} = pdist(Y{i})
+end
+
+%get topographical distance between ROIs
+for i = 1:length(Y)
+    respROI_dist{i} = tadcluster{1, enoughROItads{i}(1,1)}.ROIcenters(enoughROItads{i}(:,2), :)
+    T_Distance{i} = pdist(respROI_dist{i});
+end
+
+%normalize data by Z score
+for i = 1:length(Y_Distance)
+    Y_distance_Z{i} = zscore(Y_Distance{i});
+    T_distance_Z{i} = zscore(T_Distance{i});
+end
+
+% make trendline
+% assemble data into 1 long vector
+Y_distanceZ_all = [];
+T_distanceZ_all = [];
+for i = 1:length(Y_distance_Z)
+    Y_distanceZ_all = [Y_distanceZ_all Y_distance_Z{i}];
+    T_distanceZ_all = [T_distanceZ_all T_distance_Z{i}];
+end
+
+%generate fit data points
+my_poly=polyfit(Y_distanceZ_all, T_distanceZ_all, 1);
+X2= min(Y_distanceZ_all):0.1:max(Y_distanceZ_all); % X data range 
+Y2=polyval(my_poly,X2);
+
+plot(X2,Y2);
+
+
+% build scatterplot
+cmap = colormap(jet(length(T_Distance)));
+figure;
+hold on
+for i = 1:length(Y_Distance)
+    scatter(Y_distance_Z{i}, T_distance_Z{i}, 50, cmap(i,:), 'filled')
+end
+plot(X2,Y2, 'k', 'LineWidth', 5);
+hold off
+title('MDS Distance vs Topographical Distance by Exp')
+xlabel('MDS distance (Z-score)')
+ylabel('Topographical Distance (Z-score)')
+annotation('textbox', 'Position', [0.7 0.75 .1 .1], 'String', ['Y = 0.3X + ~0'], 'Color', 'k', 'LineStyle', 'none' );
+fig_filename = 'MDS distance vs topographical distance all tads'
+saveas(gcf, fig_filename, 'png')
+
+%Plot each experiment separately
+for i = 1:length(Y_distance_Z)
+    %generate fit data points
+    my_poly=polyfit(Y_distance_Z{i}, T_distance_Z{i}, 1);
+    X2= min(Y_distance_Z{i}):0.1:max(Y_distance_Z{i}); % X data range 
+    Y2=polyval(my_poly,X2);
+    figure;
+    hold on
+    scatter(Y_distance_Z{i}, T_distance_Z{i}, 50, 'filled')
+    plot(X2,Y2,'k', 'LineWidth', 5);
+    annotation('textbox', 'Position', [0.5 0.8 .1 .1], 'String', ['Y = ', num2str(my_poly(1,1)),'X + ', num2str(my_poly(1,2))], 'Color', 'k', 'LineStyle', 'none' );
+    title(sprintf('tad %d (%d) MDS Distance vs Topographical Distance', i, enoughROItads{i}(1,1)))
+    xlabel('MDS distance (Z-score)')
+    ylabel('Topographical Distance (Z-score)')
+    fig_filename = sprintf('tad %d (%d) MDS distance vs topographical distance', i, enoughROItads{i}(1,1))
+    saveas(gcf, fig_filename, 'png')
+    close;
+    clear('mypoly', 'X2', 'Y2')
+end
+
+
+%% Plot MDS colored by Multisensory enhancement
+%MSEnh by peak is stored in enoughROItads{i}(:,17)
+
+% generate color list based on MSEnh
+for i = 1:length(enoughROItads)
+    MSEnh = enoughROItads{i}(:,17)
+    [MSEnh_sort{i}(:,1), MSEnh_sort{i}(:,2)] = sortrows(MSEnh) %sort from smallest to largest MSEnh 
+    cmap = colormap(jet(size(enoughROItads{i},1))); %get a list of colors
+    MSEnh_sort{i}(:,3:5) = cmap %add the cmap to the MSEnh vals in order from smallest to largest
+    MSEnh_resort{i} = sortrows(MSEnh_sort{i}, 2) %sort by the original sortrows index to get back to MDS data order
+end
+
+% Make scatter plot to plot MDS coordinates colored by MSEnh
+for i = 1:length(Y)
+    figure;
+    scatter(Y{i}(:,1), Y_B{i}(:,2), 50, MSEnh_resort{i}(:,3:5), 'filled')
+    title(sprintf('tad %d (%d) 2D MDS respROIs colored by MSEnh', i, enoughROItads{i}(1,1)))
+    xlabel('MDS dim 1')
+    ylabel('MDS dim 2')
+    fig_filename = sprintf('tad %d (%d) 2D MDS respROIs colored by MSEnh', i, enoughROItads{i}(1,1))
+    saveas(gcf, fig_filename, 'png')
+    close;
+end
+    
+%% Plot MDS colored by mean onset time
+%Mean onset time is stored in enoughROItads{i}(:,11:14)
+%edited to be  by multi, then vis, then mech, individually
+
+% generate color list based on Mean onset time
+for i = 1:length(enoughROItads)
+    MSEnh = enoughROItads{i}(:,13)
+    [MSEnh_sort{i}(:,1), MSEnh_sort{i}(:,2)] = sortrows(MSEnh) %sort from smallest to largest MSEnh 
+    cmap = colormap(jet(size(enoughROItads{i},1))); %get a list of colors
+    MSEnh_sort{i}(:,3:5) = cmap %add the cmap to the MSEnh vals in order from smallest to largest
+    MSEnh_resort{i} = sortrows(MSEnh_sort{i}, 2) %sort by the original sortrows index to get back to MDS data order
+end
+
+% Make scatter plot to plot MDS coordinates colored by MSEnh
+for i = 1:length(Y)
+    figure;
+    scatter(Y{i}(:,1), Y_B{i}(:,2), 50, MSEnh_resort{i}(:,3:5), 'filled')
+    title(sprintf('tad %d (%d) 2D MDS respROIs colored by Mean Onset Time (Mech)', i, enoughROItads{i}(1,1)))
+    xlabel('MDS dim 1')
+    ylabel('MDS dim 2')
+    fig_filename = sprintf('tad %d (%d) 2D MDS respROIs colored by Mean Onset Time (Mech)', i, enoughROItads{i}(1,1))
+    saveas(gcf, fig_filename, 'png')
+    %close
+end
