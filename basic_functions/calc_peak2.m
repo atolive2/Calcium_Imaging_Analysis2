@@ -1,4 +1,4 @@
-function [ meanpeak_bytrial, peakloc_bytrial, peak_bytrial ] = calc_peak( signal, startframe, endframe )
+function [ meanpeak_bytrial, peakloc_bytrial, peak_bytrial ] = calc_peak2( signal, startframe, endframe )
 %[ meanpeak_bytrial, peakloc_bytrial, meanpeak_bytrial_errors ] = calc_peak( signal )
 
 %calc_peak takes df/f0 and returns the location of the peak and its value 
@@ -8,10 +8,10 @@ function [ meanpeak_bytrial, peakloc_bytrial, peak_bytrial ] = calc_peak( signal
 
 for i = 1:size(signal,1)
     for j = 1:size(signal,2)
-        [peak_bytrial(i,j), peakloc(i,j)] = max(signal{i,j}(startframe:(end-endframe),1));
+        [peak_bytrial(i,j), peakloc(i,j)] = max(signal{i,j}(startframe:(end-endframe)));
         lrange = peakloc(i,j) - 1 + startframe;
         urange = peakloc(i,j) + 1 + startframe;
-        meanpeak_bytrial(i,j) = mean(signal{i,j}(lrange:urange, 1) );
+        meanpeak_bytrial(i,j) = mean(signal{i,j}(lrange:urange),2 );
     end
 end
 peakloc_bytrial_raw = peakloc + startframe

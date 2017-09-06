@@ -143,12 +143,13 @@ end
 
 %% concatenate stacks I haven't fully tested this, so you may need to tweak
 if tifCount>1
-catStack=registeredStack_2;
+catStack=registeredStack_1;
 clear registeredStack_1
-    for n=3:tifCount
+    for n=2:tifCount
         eval(['catStack=cat(3,catStack,registeredStack_' num2str(n) ');']);
+        eval(['clear registeredStack_' num2str(n)])
     end
-    eval(['clear registeredStack_' num2str(n)])
+    %eval(['clear registeredStack_' num2str(n)])
 end
 
 
