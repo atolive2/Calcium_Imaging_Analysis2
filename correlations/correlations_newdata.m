@@ -1,102 +1,89 @@
-%% Correlations Version 2: cross correlation of time sequences using xcorr
-% r = xcorr(x,y) returns the cross-correlation of two discrete-time sequences,
-% x and y. Cross-correlation measures the similarity between x and shifted
-% (lagged) copies of y as a function of the lag.
-% https://www.mathworks.com/help/signal/ref/xcorr.html
+%% One long file to go from tadpole to correlation analysis 
+% used on exps 31, 34, 40 first 
 
-% all of this is copied from correlations_bymodality and
-% cluster_analysis_v1 but using xcorr function instead of corrcoef
+%% Get smoothed data 
+% from tadpole data
 
-% this code starts with tadcluster_data_20170814, with all fields after
-% resp_ROIs deleted.
-% tadcluster{1,t}.alldff0 contains time series data for all trials
-% tadcluster{1,t}.dff0_bystimtype contains time series data split by trial
-% type for high/high combos only
 
-% graphs are saved in C:\Users\Torrey\Desktop\correlations_v2_xcorr_figs
 
-% this is responding ROIs only. Not all experiments have enough ROIs to be
-% included (min(ROI count) = 18 for inclusion).
+
+% OR just open the file
+%load('tads31_34_40_smootheddata_20170906.mat')
+
+%% Get ROI locs into double format
+for t = 1:length(tadpole)
+    for i = 1:length(tadpole{1,t}.somaticROICenters)
+        tadpole{1,t}.ROIlocs_dbl(i,:) = tadpole{1,t}.somaticROICenters{1,i}.Centroid
+    end
+end
+
+%% Get unimax from smoothed data
+% for t = 1:length(tadpole)
+%     for i = 1:size(tadpole{1,t}.peak_avg_sm, 2)
+%         if tadpole{1,t}.peak_avg_sm(2,i) > tadpole{1,t}.peak_avg_sm(3,i)
+%             tadpole{1,t}.unimax_peakavg_sm
+%             tadpole{1,t}.unimax_stimtype_sm
+
+%% Get all useful data into tadcluster
+% this only uses the smoothed df/f0 data (moving avg, 8).
+for t = 1:length(tadpole)
+    %basics
+    tadcluster{1,t}.stimorder = tadpole{1,t}.stimorder;
+    tadcluster{1,t}.expnum = tadpole{1,t}.expnum;
+    tadcluster{1,t}.ROIcenters = tadpole{1,t}.ROIlocs_dbl;
+    tadcluster{1,t}.df_f0 = tadpole{1,t}.smoothed;
+    % by cell, by trial data
+    tadcluster{1,t}.area_bytrial = tadpole{1,t}.area_bytrial_sm;
+    tadcluster{1,t}.peak_bytrial = tadpole{1,t}.peak_bytrial_sm;
+    tadcluster{1,t}.peakloc_bytrial = tadpole{1,t}.peakloc_bytrial_sm;
+    % avg trials by stimtype each cell
+    tadcluster{1,t}.area_avg = tadpole{1,t}.area_avg_sm;
+    tadcluster{1,t}.peak_avg = tadpole{1,t}.peak_avg_sm;
+    tadcluster{1,t}.peakloc_avg = tadpole{1,t}.peakloc_avg_sm;
+    % calculated info using avg data
+    tadcluster{1,t}.MSenh_area = tadpole{1,t}.MSenh_area_sm;
+    tadcluster{1,t}.MSenh_peak = tadpole{1,t}.MSenh_peak_sm;
+    tadcluster{1,t}.MSenh_peakloc = tadpole{1,t}.MSenh_peakloc_sm;
+%     tadcluster{1,t}.unimax_peakavg = tadpole{1,t}.unimax_peakavg_sm;
+%     tadcluster{1,t}.unimax_stimtype = tadpole{1,t}.unimax_stimtype_sm;
+%     tadcluster{1,t}.multimax_peakavg = tadpole{1,t}.multimax_peakavg_sm;
+end
+
+%% Find and remove cells that don't respond at all
 % response = peak is after stim onset (20 frames is a generous buffer), greater than 0.2 df/f0
-    %Criteria for elimination (e.g. these represent "bad" trials):
-    % -	Peak location is earlier than the stimulus onset
-    % -	Area is negative
-    % -	Peak is negative
-    % - peak is greater than 10
-% included in resp_ROI = at least 1 response as defined above.
+%Criteria for elimination (e.g. these represent "bad" trials):
+% -	Peak location is earlier than the stimulus onset
+% -	Area is negative
+% -	Peak is negative
+% - peak is greater than 10
 
-%% If beginning with basic tadpole data
-
-% import data:
-myFolder = 'D:\\Torrey_calcium_imaging\newData_20170924' %'F:/Calcium_Imaging_Analysis/analyzed_compiled/Smoothed_analysis/'; % May need to correct this.
-%mkdir([myFolder 'figures']);
-if ~isdir(myFolder)
-	errorMessage = sprintf('Error: The following folder does not exist:\n%s', myFolder);
-	uiwait(warndlg(errorMessage));
-	return;
-end
-filePattern = fullfile(myFolder, 'tadpole*.mat');
-matFiles = dir(filePattern)
-
-for k = 1:length(matFiles)
-	matFilename = fullfile(myFolder, matFiles(k).name)
-	matData = load(matFilename); % Retrieves a structure.
-    
-	% See if tadpole actually exists in the data structure.
-	hasField = isfield(matData, 'tadpole');
-	if ~hasField
-		% Alert user in popup window.
-		warningMessage = sprintf('tadpole is not in %s\n', matFilename);
-		uiwait(warndlg(warningMessage));
-		% It's not there, so skip the rest of the loop.
-		continue; % Go to the next iteration.
-	end
-	tadcluster{1,k} = matData.tadpole % If you get to here, tadpole existed in the file.
-    tadcluster{1,k}.matFilename = matFilename
+for t = 1:length(tadcluster)
+[ tadcluster{1,t}.boolean_response, tadcluster{1,t}.sum_responses ] = get_respondingROIs3( cell2mat(tadcluster{1,t}.area_bytrial), tadcluster{1,t}.peak_bytrial, tadcluster{1,t}.peakloc_bytrial )
 end
 
+% if sum_responses = 0, then eliminate the ROI from further analysis. 
+for t = 1:length(tadcluster)
+    tadcluster{1,t}.resp_ROIs = find(tadcluster{1,t}.sum_responses);
+end
+
+%% Reassemble df/f0 into 1 long vector per cell
 % recombine trial by trial df/f0 into 1 long vector for each ROI
 for t = 1:length(tadcluster)
-    for i = 1:size(tadcluster{1,t}.smoothed, 1)
+    for i = 1:size(tadcluster{1,t}.df_f0, 1)
         tmp = [];
-        for j = 1:size(tadcluster{1,t}.smoothed, 2)
-            tmp = [tmp; tadcluster{1,t}.smoothed{i,j}];
+        for j = 1:size(tadcluster{1,t}.df_f0, 2)
+            tmp = [tmp; tadcluster{1,t}.df_f0{i,j}];
         end
         tadcluster{1,t}.alldff0(i,:) = tmp';
     end
 end
 
-% recombine each modality separately
-%(only use 1-4 here to eliminate variation from stim strength)
-tmp = [];
-for t = 1:length(tadcluster)
-    for s = 1:4
-        trials_touse = find(tadcluster{1,t}.stimorder == s)
-       %tmp = [];
-        
-            for j = 1:size(tadcluster{1,t}.df_f0,1) % over each ROI
-                for i = 1:length(trials_touse) %over all trials of 1 stim type
-                    tmp = [tmp; tadcluster{1,t}.df_f0{j, trials_touse(i)}];
-                end
-                tadcluster{1,t}.dff0_bystimtype{j, s} = tmp;
-                tmp = [];
-            end
-    end
-end
 
-% define responding ROIs
-for t = 1:length(tadcluster)
-    tadcluster{1,t}.resp_ROIs = find(tadcluster{1,t}.sum_responses_sm > 0);
-end
-
-% make ROIcenters, which puts the ROI center info into a roi_num x 2 matrix
-for t = 1:length(tadcluster)
-    for r = 1:length(tadcluster{1,t}.somaticROICenters)
-    tadcluster{1,t}.ROIcenters(r,:) = tadcluster{1,t}.somaticROICenters{1,r}(1).Centroid;
-    end
-end
 
 %% calculate correlation coefficient for responding ROIs using all trials
+
+%%%%%%%%%%% OUT OF MEMORY ERROR
+
 % maxlag defaults to 2N-1, with N = greater of the lengths of x and y
 % therefore, to prevent crashing Matlab, set maxlag. I will set max lag to
 % the length of one trial (so the maximum tested lag is that response 1
@@ -127,7 +114,7 @@ for t = 1:length(tadcluster)
     for r = 1:len
         for c = 1:len
             idx = (r-1)*len + c;
-            tadcluster{1,t}.respROIdff0_maxR_sq(r,c) = tadcluster{1,t}.respROIdff0_maxR(1,idx);
+            %tadcluster{1,t}.respROIdff0_maxR_sq(r,c) = tadcluster{1,t}.respROIdff0_maxR(1,idx);
             tadcluster{1,t}.respROIdff0_maxRlag_sq(r,c) = tadcluster{1,t}.respROIdff0_lag(1,tadcluster{1,t}.respROIdff0_maxR(2,idx));
         end
     end
@@ -166,27 +153,51 @@ for t = 1:length(tadcluster)
     end
 end
 
-%% Reapply above analysis to each stimulus modality separately. 
 
-% make dff0_multi, vis, mech, ns into right shape with only respROIs
+%%%%%%%%%%%%%%%%%%% RERUN ABOVE ON OTHER COMPUTER
+
+%% Separate trials by modality
+
+% Make df_f0 separated by trial type (only use 1-4 here to eliminate
+% variation from stim strength)
+tmp = [];
 for t = 1:length(tadcluster)
-    for r = 1:length(tadcluster{1,t}.resp_ROIs)
-        tadcluster{1,t}.dff0_multi(r, :) = reshape(tadcluster{1,t}.dff0_bystimtype{tadcluster{1,t}.resp_ROIs(r),1},[], 1);
-        tadcluster{1,t}.dff0_vis(r, :) = reshape(tadcluster{1,t}.dff0_bystimtype{tadcluster{1,t}.resp_ROIs(r),2},[], 1);
-        tadcluster{1,t}.dff0_mech(r, :) = reshape(tadcluster{1,t}.dff0_bystimtype{tadcluster{1,t}.resp_ROIs(r),3},[], 1);
-        tadcluster{1,t}.dff0_none(r, :) = reshape(tadcluster{1,t}.dff0_bystimtype{tadcluster{1,t}.resp_ROIs(r),4},[], 1);
-
+    for s = 1:4
+        trials_touse = find(tadcluster{1,t}.stimorder == s)
+       %tmp = [];
+        
+            for j = 1:size(tadcluster{1,t}.df_f0,1) % over each ROI
+                for i = 1:length(trials_touse) %over all trials of 1 stim type
+                    tmp = [tmp; tadcluster{1,t}.df_f0{j, trials_touse(i)}];
+                end
+                tadcluster{1,t}.dff0_bystimtype{j, s} = tmp;
+                tmp = [];
+            end
     end
 end
 
+% calculate correlation coefficient for all ROIs, each stimtype separately
+% first get a matrix ROI x dff0 for all trials of a given stimtype
+for t = 1:length(tadcluster)
+    for i = 1:size(tadcluster{1,t}.dff0_bystimtype,1)
+        if sum(size(tadcluster{1,t}.dff0_bystimtype{i,1})) > 0 %elimnate tads with no high/high multisensory trials
+        tadcluster{1,t}.dff0_multi(i,:) = tadcluster{1,t}.dff0_bystimtype{i,1}';
+        tadcluster{1,t}.dff0_vis(i,:) = tadcluster{1,t}.dff0_bystimtype{i,2}';
+        tadcluster{1,t}.dff0_mech(i,:) = tadcluster{1,t}.dff0_bystimtype{i,3}';
+        tadcluster{1,t}.dff0_none(i,:) = tadcluster{1,t}.dff0_bystimtype{i,4}';
+        end
+    end
+end
+
+%% Calculate correlation coefficients by stim type
 
 for t = 1:length(tadcluster)
     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
-        set_lag = length(tadcluster{1,t}.smoothed{1,1});
-        [tadcluster{1,t}.respROIdff0_R_MS, tadcluster{1,t}.respROIdff0_lag_MS] = xcorr(tadcluster{1,t}.dff0_multi', set_lag, 'coeff');
-        [tadcluster{1,t}.respROIdff0_R_V, tadcluster{1,t}.respROIdff0_lag_V] = xcorr(tadcluster{1,t}.dff0_vis', set_lag, 'coeff');
-        [tadcluster{1,t}.respROIdff0_R_M, tadcluster{1,t}.respROIdff0_lag_M] = xcorr(tadcluster{1,t}.dff0_mech', set_lag, 'coeff');
-        [tadcluster{1,t}.respROIdff0_R_N, tadcluster{1,t}.respROIdff0_lag_N] = xcorr(tadcluster{1,t}.dff0_none', set_lag, 'coeff');
+        set_lag = length(tadcluster{1,t}.df_f0{1,1});
+        [tadcluster{1,t}.respROIdff0_R_MS, tadcluster{1,t}.respROIdff0_lag_MS] = xcorr(tadcluster{1,t}.dff0_multi(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_V, tadcluster{1,t}.respROIdff0_lag_V] = xcorr(tadcluster{1,t}.dff0_vis(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_M, tadcluster{1,t}.respROIdff0_lag_M] = xcorr(tadcluster{1,t}.dff0_mech(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_N, tadcluster{1,t}.respROIdff0_lag_N] = xcorr(tadcluster{1,t}.dff0_none(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
     end
 end
 
@@ -402,8 +413,8 @@ end
 for t = 1:length(tadcluster)
     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
         if length(tadcluster{1,t}.resp_ROIs) > 0
-        lim_min = min(tadcluster{1,t}.respROIdff0_lag);
-        lim_max = max(tadcluster{1,t}.respROIdff0_lag);
+        lim_min = min(tadcluster{1,t}.respROIdff0_lag_MS);
+        lim_max = max(tadcluster{1,t}.respROIdff0_lag_MS);
         figure;
         subplot(2,2,1)
         hist(tadcluster{1,t}.respROIdff0_maxRlag_sq_MS,40)
@@ -431,25 +442,25 @@ end
 
 
 %% find "highly correlated" ROIs by locating all maxR > 0.5
-
-% based on all df/f0
-for t=1:length(tadcluster)
-    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
-        if length(tadcluster{1,t}.resp_ROIs) > 0
-            for r = 1:size(tadcluster{1,t}.respROIdff0_maxR_sq, 1)
-                for c = 1:size(tadcluster{1,t}.respROIdff0_maxR_sq, 2)
-                    if tadcluster{1,t}.respROIdff0_maxR_sq(r,c) > 0.5
-                        highcorr(r, c) = 1;
-                    else
-                        highcorr(r, c) = 0;
-                    end
-                end
-            end
-            tadcluster{1,t}.respROIdff0_highcorr = logical(highcorr)
-            clear('highcorr')
-        end
-    end
-end
+% 
+% % based on all df/f0
+% for t=1:length(tadcluster)
+%     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
+%         if length(tadcluster{1,t}.resp_ROIs) > 0
+%             for r = 1:size(tadcluster{1,t}.respROIdff0_maxR_sq, 1)
+%                 for c = 1:size(tadcluster{1,t}.respROIdff0_maxR_sq, 2)
+%                     if tadcluster{1,t}.respROIdff0_maxR_sq(r,c) > 0.5
+%                         highcorr(r, c) = 1;
+%                     else
+%                         highcorr(r, c) = 0;
+%                     end
+%                 end
+%             end
+%             tadcluster{1,t}.respROIdff0_highcorr = logical(highcorr)
+%             clear('highcorr')
+%         end
+%     end
+% end
 
 % based on multi df/f0
 for t=1:length(tadcluster)
@@ -563,7 +574,8 @@ end
 
 % Determine the ROIs that are the same across all cells with significant
 % overlap with a given ROI
-% significan overlap = at least 1/6*total num ROIS in correlated_ROIs_alldff0_int
+% significan overlap = at least 1/6*total num ROIS in
+% correlated_ROIs_dff0_MS_int
 clear('lens', 'int', 'roi_count')
 for t = 1:length(tadcluster)
     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
@@ -617,12 +629,12 @@ end
 
 for t = 1:length(tadcluster)
     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
-        if isfield(tadcluster{1,t}, 'correlated_ROIs_alldff0_common_AROI')
+        if isfield(tadcluster{1,t}, 'correlated_ROIs_dff0_MS_common_AROI')
             rois = [];
             list = [];
-            for i = 1:length(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI)
-                rois = [rois tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI{i}'] %all ROIs in all groups
-                if ~isempty(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI{i})
+            for i = 1:length(tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI)
+                rois = [rois tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI{i}'] %all ROIs in all groups
+                if ~isempty(tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI{i})
                     list = [list tadcluster{1,t}.resp_ROIs(i)]; %the ROIs we're using for the groups
                 else
                     continue
@@ -632,9 +644,9 @@ for t = 1:length(tadcluster)
             % change size for each ROI-based cluster
             sizes = [];
             N = 1;
-            for j = 1:length(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI)
-                if ~isempty(tadcluster{1,t}.correlated_ROIs_alldff0_common{j})
-                    len=length(tadcluster{1,t}.correlated_ROIs_alldff0_common{j});
+            for j = 1:length(tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI)
+                if ~isempty(tadcluster{1,t}.correlated_ROIs_dff0_MS_common{j})
+                    len=length(tadcluster{1,t}.correlated_ROIs_dff0_MS_common{j});
                     sizes = [sizes; N*ones(len,1)] ;
                     N = N+1;
                 end
@@ -663,12 +675,6 @@ for t = 1:length(tadcluster)
     end
 end
 
-
-%% What features are similar among groups of cells that cluster?
-
-
-
-
 %% Are there more correlated cells with multi vs uni?
 
 % Get the number of cells correlated with a given cell using each stim
@@ -677,7 +683,7 @@ end
 for t = 1:length(tadcluster)
    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
         if length(tadcluster{1,t}.resp_ROIs) > 0
-            tadcluster{1,t}.highcorr_numROIs_all = sum(tadcluster{1,t}.respROIdff0_highcorr);
+            %tadcluster{1,t}.highcorr_numROIs_all = sum(tadcluster{1,t}.respROIdff0_highcorr);
             tadcluster{1,t}.highcorr_numROIs_MS = sum(tadcluster{1,t}.respROIdff0_highcorr_MS);
             tadcluster{1,t}.highcorr_numROIs_V = sum(tadcluster{1,t}.respROIdff0_highcorr_V);
             tadcluster{1,t}.highcorr_numROIs_M = sum(tadcluster{1,t}.respROIdff0_highcorr_M);
@@ -690,20 +696,20 @@ end
 for t = 1:length(tadcluster)
    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
         if length(tadcluster{1,t}.resp_ROIs) > 0
-            myfit1 = polyfit(tadcluster{1,t}.highcorr_numROIs_MS, tadcluster{1,t}.highcorr_numROIs_all, 1)
+            %myfit1 = polyfit(tadcluster{1,t}.highcorr_numROIs_MS, tadcluster{1,t}.highcorr_numROIs_all, 1)
             myfit2 = polyfit(tadcluster{1,t}.highcorr_numROIs_MS, tadcluster{1,t}.highcorr_numROIs_V, 1)
             myfit3 = polyfit(tadcluster{1,t}.highcorr_numROIs_MS, tadcluster{1,t}.highcorr_numROIs_M, 1)
             myfit4 = polyfit(tadcluster{1,t}.highcorr_numROIs_MS, tadcluster{1,t}.highcorr_numROIs_N, 1)
             linspace1 = linspace(0, max(tadcluster{1,t}.highcorr_numROIs_MS))
-            figure;
-            subplot(2,2,1)
-            scatter(tadcluster{1,t}.highcorr_numROIs_MS, tadcluster{1,t}.highcorr_numROIs_all)
-            hold on
-            plot(linspace1, polyval(myfit1, linspace1))
-            hold off
-            title('multi vs all')
-            %xlabel('multi counts')
-            ylabel('all counts')
+%             figure;
+%             subplot(2,2,1)
+%             scatter(tadcluster{1,t}.highcorr_numROIs_MS, tadcluster{1,t}.highcorr_numROIs_all)
+%             hold on
+%             plot(linspace1, polyval(myfit1, linspace1))
+%             hold off
+%             title('multi vs all')
+%             %xlabel('multi counts')
+%             ylabel('all counts')
 
             subplot(2,2,2)
             scatter(tadcluster{1,t}.highcorr_numROIs_MS, tadcluster{1,t}.highcorr_numROIs_V)
@@ -739,4 +745,5 @@ for t = 1:length(tadcluster)
         end
    end
 end
+
 
