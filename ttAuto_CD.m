@@ -6,7 +6,8 @@ useGui=0;
 
 % if you want to hand code it, set the above bool to 0 and
 % set the path below, do not add the ending slash, I do that later
-imageDirectoryPath = 'F:\Calcium_Imaging_Analysis\_unanalyzed data\20170517 Ca exp 31\concat_trials'
+%imageDirectoryPath = 'F:\Calcium_Imaging_Analysis\_unanalyzed data\20170517 Ca exp 31\concat_trials'
+imageDirectoryPath = 'D:\\Torrey_calcium_imaging\20170913 ca exp 42\concat_trials'
 %imageDirectoryPath='/Users/cad/Desktop/tAutoTest';
 % on non *nix system it will be F:\myImagesEtc
 
@@ -78,6 +79,7 @@ templateFrame=im2uint16(mean(templateStack(:,:,templateFrames),3),'Indexed');
 
 figure;
 imagesc(templateFrame) 
+
 %% now register that stack since you already imported it.
 preRegMean=mean(templateStack,3);
 regTemp=templateFrame;
@@ -152,5 +154,25 @@ clear registeredStack_1
     %eval(['clear registeredStack_' num2str(n)])
 end
 
+%% exp 42 problem with registration testing
 
+catStack_sm = cat(3, catStack(:,:,1:3840), catStack(:,:,5761:19200));
+
+% concatenate specific registered stacks
+keep = [1 4 5 6 7];
+catStack=registeredStack_1;
+%clear registeredStack_1
+    for n=2:length(keep)
+        eval(['catStack=cat(3,catStack,registeredStack_' num2str(keep(n)) ');'])
+        %sprintf('registeredStack_%s', num2str(keep(n)))
+        %eval(['clear registeredStack_' num2str(n)])
+    end
+
+% average the average images
+for k = 1:length(keep)
+    %'avg_keep(:,:,k) = meanProj_registeredStack_' num2str(keep(n)) ');']);
+
+    eval(['avg_keep(:,:,k) = meanProj_registeredStack_' num2str(keep(n)) ');'])
+    
+end
 

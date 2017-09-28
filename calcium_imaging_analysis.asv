@@ -129,31 +129,42 @@ flatStack=cat(3, flatStack, importedStack8);
 tadpole.stimorder = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
 tadpole.stimorder = [1 1 1 1 1 1 1 1 1 1]
 tadpole.stimorder = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
-tadpole.stimorder = [1 1 1] 1 1 1 1 1 1] 1 1 1 1 1 1 1 1 1]
-%tadpole.stimorder = [8 2 7 4 2 7 8 4 7 8 2 4 7 2 8 4 8 7 2 4 2 8 7 4 10 2 12 4 2 12 10 4 12 10 2 4 12 2 10 4 10 12 2 4 2 10 12 4 10 2 12 4 2 12 10 4 12 10 2 4]
 tadpole.stimorder = [1 2 3 4 2 3 1 4 3 1 2 4 ...
     3 2 1 4 1 3 2 4 2 1 3 4 ...
+    1 2 3 4 2 3 1 4 3 1 2 4 ...
+    3 2 1 4 1 3 2 4 2 1 3 4 ...
+    1 2 3 4 2 3 1 4 3 1 2 4] ...
+    3 2 1 4 1 3 2 4 2 1 3 4 ...
+    1 2 3 4 2 3 1 4 3 1 2 4 ...
+    3 2 1 4 1 3 2 4 2 1 3 4];
+%tadpole.stimorder = [8 2 7 4 2 7 8 4 7 8 2 4 7 2 8 4 8 7 2 4 2 8 7 4 10 2 12 4 2 12 10 4 12 10 2 4 12 2 10 4 10 12 2 4 2 10 12 4 10 2 12 4 2 12 10 4 12 10 2 4]
+%exp42 tadpole.stimorder = [1 2 3 4 2 3 1 4 3 1 2 4 ...
+%     7 6 9 4 9 7 6 4 6 9 7 4 ...
+%     1 2 3 4 2 3 1 4 3 1 2 4 ...
+%     3 2 1 4 1 3 2 4 2 1 3 4 ...
+%     5 6 3 4 6 3 5 4 3 5 6 4 ...
+%     5 6 3 4 6 3 5 4 3 5 6 4]
 
 %check
 length(tadpole.stimorder)
 %2. experiment number
-tadpole.expnum= 34
+tadpole.expnum= 30
 %3. date of experiment
-tadpole.expdate='20170718'
+tadpole.expdate='20170516'
 %4. file path
-tadpole.filepath= 'D:\\Torrey_calcium_imaging/'
+tadpole.filepath= 'D://Torrey_calcium_imaging/20170516 ca exp 30/'
 %5. make a folder for the figures
 mkdir([tadpole.filepath 'figures']); 
 %6. trial length
-tadpole.trial_length= [159];
+tadpole.trial_length= [160];
 %7. number of trial blocks
-tadpole.numtrialblocks=17
+tadpole.numtrialblocks=5
 %8. Create figure save path
 tadpole.figure_filepath=[tadpole.filepath 'figures/']
 %9. number of trials in a block
 tadpole.num_trials=12
 %10. what blocks is this?
-tadpole.blockids = [ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17]
+tadpole.blockids = [ 1 2 3 4 5 6 7 8 ]
 %what cell number?
 %tadpole.cellid = 6
 
@@ -170,7 +181,7 @@ tadpole.somaticROICenters=somaticROICenters;
 tadpole.somaticRoiCounter=somaticRoiCounter;
 tadpole.somaticROIs=somaticROIs;
 tadpole.neuropilF=neuropilF;
-tadpole.neuropilF=[neuropilF1 neuropilF];
+%tadpole.neuropilF=[neuropilF1 neuropilF];
 tadpole.neuropilROI_PixelLists=neuropilROI_PixelLists;
 tadpole.neuropilROIBoundaries=neuropilROIBoundaries;
 tadpole.neuropilROICenters=neuropilROICenters;
@@ -182,47 +193,47 @@ tadpole.neuropilROIs=neuropilROIs;
 % then open the mat file containing only tadpole struct.\
 
 %% remove extra frames to get 159 frames per trial
-% only necessary if forgotten during tiff creation step in image J
-% what trials need frames removed?
-remove_from_trials = [trial_ids(1:154), trial_ids(156:165), trial_ids(169:175), trial_ids(177), trial_ids(180:186), trial_ids(192:196), trial_ids(198)]
+% % only necessary if forgotten during tiff creation step in image J
+% % what trials need frames removed?
+% remove_from_trials = [trial_ids(1:154), trial_ids(156:165), trial_ids(169:175), trial_ids(177), trial_ids(180:186), trial_ids(192:196), trial_ids(198)]
+% 
+% % create a vector to be trial_length
+% all_trial_lengths = 159 * ones(1,204)
+% f159_trs = setdiff(trial_ids, remove_from_trials)
+% for i = 1:length(remove_from_trials)
+%     all_trial_lengths(remove_from_trials(i)) = all_trial_lengths(remove_from_trials(i)) + 1
+% end
+% 
+% % split the data into trials
+% data = tadpole.somaticF; % switch for somatic and neuropil
+% 
+% frame_end = 0;
+% frame_start = 1;
+% num_trials = length(all_trial_lengths)
+% split_trials=cell(size(data,1),num_trials);
+% for i = 1:num_trials
+%     frame_end = frame_end + all_trial_lengths(i)
+%     for j = 1:size(data,1)
+%     split_trials{j,i} = data(j, frame_start:frame_end);
+%     end
+%     frame_start = frame_end + 1
+% end
+% tadpole.trial_splitS_all = split_trials; %switch for somatic and neuropil
+% 
+% % % remove last frame of all trials with 160
+% % for i = 1:size(tadpole.trial_splitS_all, 2)
+% %     if length(tadpole.trial_splitS_all{1, i}) > 159
+% %         for j = 1:size(tadpole.trial_splitS_all, 1)
+% %         tadpole.trial_splitS{j, i} = tadpole.trial_splitS_all{j, i}(:, 1:159);
+% %         end
+% %     else
+% %         for j = 1:size(tadpole.trial_splitS_all, 1)
+% %         tadpole.trial_splitS{j, i} = tadpole.trial_splitS_all{j, i};
+% %         end
+% %     end
+% % end
 
-% create a vector to be trial_length
-all_trial_lengths = 159 * ones(1,204)
-f159_trs = setdiff(trial_ids, remove_from_trials)
-for i = 1:length(remove_from_trials)
-    all_trial_lengths(remove_from_trials(i)) = all_trial_lengths(remove_from_trials(i)) + 1
-end
-
-% split the data into trials
-data = tadpole.somaticF; % switch for somatic and neuropil
-
-frame_end = 0;
-frame_start = 1;
-num_trials = length(all_trial_lengths)
-split_trials=cell(size(data,1),num_trials);
-for i = 1:num_trials
-    frame_end = frame_end + all_trial_lengths(i)
-    for j = 1:size(data,1)
-    split_trials{j,i} = data(j, frame_start:frame_end);
-    end
-    frame_start = frame_end + 1
-end
-tadpole.trial_splitS_all = split_trials; %switch for somatic and neuropil
-
-% remove last frame of all trials with 160
-for i = 1:size(tadpole.trial_splitS_all, 2)
-    if length(tadpole.trial_splitS_all{1, i}) > 159
-        for j = 1:size(tadpole.trial_splitS_all, 1)
-        tadpole.trial_splitS{j, i} = tadpole.trial_splitS_all{j, i}(:, 1:159);
-        end
-    else
-        for j = 1:size(tadpole.trial_splitS_all, 1)
-        tadpole.trial_splitS{j, i} = tadpole.trial_splitS_all{j, i};
-        end
-    end
-end
-
-%% Turn raw signal into deltaF/F0
+%% Split the data into trials
 
 % start by breaking up trials
 [tadpole.trial_splitS] = split_into_trials( tadpole.somaticF, tadpole.trial_length )
@@ -250,14 +261,16 @@ for i = 1:size(tadpole.trial_splitS,2)
     clear('fig_filename')
 end
 
-tadpole.badtrials = [108 109 110 111 112 113 114 116 117 118 120 141 142 143 144 145 146 147 156 180];
+tadpole.badtrials = 3 [49 54 55 56 58 59 65 66 69 70 71 72 79 80] % [108 109 110 111 112 113 114 116 117 118 120 141 142 143 144 145 146 147 156 180];
 
 %% After checking for bad trials visually
 
 %tadpole.badtrials = [25, 26, 27, 28];
 
-%% Manipulate "good" trials 
-% now get a background value for each
+%% Manipulate "good" trials: 
+
+% Turn raw signal into deltaF/F0
+% get a background value for each
 [ tadpole.background ] = calc_background( tadpole.trial_splitS )
 
 % subtract background from somaticF and neuropilF
@@ -275,7 +288,7 @@ tadpole.badtrials = [108 109 110 111 112 113 114 116 117 118 120 141 142 143 144
 
 % Extract parameters for each trial
 [ tadpole.area_bytrial ] = calc_area( tadpole.df_f0, 42 )
-[ tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial, tadpole.meanpeak_bytrial_errors ] = calc_peak2( tadpole.signal, floor((tadpole.trial_length/7)*2) , 2)
+[ tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial] = calc_peak2( tadpole.signal, floor((tadpole.trial_length/7)*2) , 2)
 % for unknown reasons, calc_peak suddenly stopped working on gcamp_ours
 % (exp 921)
 %[ tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial] = calc_peak( tadpole.signal )
@@ -299,7 +312,7 @@ tadpole.unique_stims = unique(tadpole.stimorder);
 
 % collect all values for a single stim type into a single place for easy
 % histogram - ing.
-[ tadpole.stim_vals_area ] = get_all_bystim( tadpole.stimmask, unique(tadpole.stimorder), tadpole.area_bytrial )
+[ tadpole.stim_vals_area ] = get_all_bystim( tadpole.stimmask, unique(tadpole.stimorder), cell2mat(tadpole.area_bytrial) )
 [ tadpole.stim_vals_meanpeak ] = get_all_bystim( tadpole.stimmask, unique(tadpole.stimorder), tadpole.meanpeak_bytrial )
 [ tadpole.stim_vals_peakloc ] = get_all_bystim( tadpole.stimmask, unique(tadpole.stimorder), tadpole.peakloc_bytrial )
 
@@ -316,13 +329,13 @@ tadpole.unique_stims = unique(tadpole.stimorder);
 
     % Extract parameters for each trial
     [ tadpole.area_bytrial_sm ] = calc_area( tadpole.smoothed, 46 )
-    [ tadpole.meanpeak_bytrial_sm, tadpole.peakloc_bytrial_sm, tadpole.peak_bytrial_sm ] = calc_peak2( tadpole.smoothed, 5, 5)
+    [ tadpole.meanpeak_bytrial_sm, tadpole.peakloc_bytrial_sm] = calc_peak2( tadpole.smoothed, 5, 5)
 
     % Define response/no response
     [ tadpole.boolean_response_sm, tadpole.sum_responses_sm ] = get_respondingROIs2( tadpole.area_bytrial_sm, tadpole.meanpeak_bytrial_sm, tadpole.peakloc_bytrial_sm )
 
     % Find average area, peak and peakloc for each ROI for each stim type
-    [ tadpole.area_avg_sm ] = mean_by_stimtype ( tadpole.area_bytrial_sm, tadpole.stimmask )
+    [ tadpole.area_avg_sm ] = mean_by_stimtype2 ( cell2mat(tadpole.area_bytrial_sm), tadpole.stimmask )
     [ tadpole.peak_avg_sm ] = mean_by_stimtype2 ( tadpole.meanpeak_bytrial_sm, tadpole.stimmask )
     [ tadpole.peakloc_avg_sm ] = mean_by_stimtype2 ( tadpole.peakloc_bytrial_sm, tadpole.stimmask )
 

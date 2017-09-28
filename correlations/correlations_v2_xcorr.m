@@ -25,6 +25,77 @@
     % - peak is greater than 10
 % included in resp_ROI = at least 1 response as defined above.
 
+%% If beginning with basic tadpole data
+
+% import data:
+myFolder = 'D:\\Torrey_calcium_imaging\newData_20170924' %'F:/Calcium_Imaging_Analysis/analyzed_compiled/Smoothed_analysis/'; % May need to correct this.
+%mkdir([myFolder 'figures']);
+if ~isdir(myFolder)
+	errorMessage = sprintf('Error: The following folder does not exist:\n%s', myFolder);
+	uiwait(warndlg(errorMessage));
+	return;
+end
+filePattern = fullfile(myFolder, 'tadpole*.mat');
+matFiles = dir(filePattern)
+
+for k = 1:length(matFiles)
+	matFilename = fullfile(myFolder, matFiles(k).name)
+	matData = load(matFilename); % Retrieves a structure.
+    
+	% See if tadpole actually exists in the data structure.
+	hasField = isfield(matData, 'tadpole');
+	if ~hasField
+		% Alert user in popup window.
+		warningMessage = sprintf('tadpole is not in %s\n', matFilename);
+		uiwait(warndlg(warningMessage));
+		% It's not there, so skip the rest of the loop.
+		continue; % Go to the next iteration.
+	end
+	tadcluster{1,k} = matData.tadpole % If you get to here, tadpole existed in the file.
+    tadcluster{1,k}.matFilename = matFilename
+end
+
+% recombine trial by trial df/f0 into 1 long vector for each ROI
+for t = 1:length(tadcluster)
+    for i = 1:size(tadcluster{1,t}.smoothed, 1)
+        tmp = [];
+        for j = 1:size(tadcluster{1,t}.smoothed, 2)
+            tmp = [tmp; tadcluster{1,t}.smoothed{i,j}];
+        end
+        tadcluster{1,t}.alldff0(i,:) = tmp';
+    end
+end
+
+% recombine each modality separately
+%(only use 1-4 here to eliminate variation from stim strength)
+tmp = [];
+for t = 1:length(tadcluster)
+    for s = 1:4
+        trials_touse = find(tadcluster{1,t}.stimorder == s)
+       %tmp = [];
+        
+            for j = 1:size(tadcluster{1,t}.df_f0,1) % over each ROI
+                for i = 1:length(trials_touse) %over all trials of 1 stim type
+                    tmp = [tmp; tadcluster{1,t}.df_f0{j, trials_touse(i)}];
+                end
+                tadcluster{1,t}.dff0_bystimtype{j, s} = tmp;
+                tmp = [];
+            end
+    end
+end
+
+% define responding ROIs
+for t = 1:length(tadcluster)
+    tadcluster{1,t}.resp_ROIs = find(tadcluster{1,t}.sum_responses_sm > 0);
+end
+
+% make ROIcenters, which puts the ROI center info into a roi_num x 2 matrix
+for t = 1:length(tadcluster)
+    for r = 1:length(tadcluster{1,t}.somaticROICenters)
+    tadcluster{1,t}.ROIcenters(r,:) = tadcluster{1,t}.somaticROICenters{1,r}(1).Centroid;
+    end
+end
+
 %% calculate correlation coefficient for responding ROIs using all trials
 % maxlag defaults to 2N-1, with N = greater of the lengths of x and y
 % therefore, to prevent crashing Matlab, set maxlag. I will set max lag to
@@ -56,7 +127,7 @@ for t = 1:length(tadcluster)
     for r = 1:len
         for c = 1:len
             idx = (r-1)*len + c;
-            %tadcluster{1,t}.respROIdff0_maxR_sq(r,c) = tadcluster{1,t}.respROIdff0_maxR(1,idx);
+            tadcluster{1,t}.respROIdff0_maxR_sq(r,c) = tadcluster{1,t}.respROIdff0_maxR(1,idx);
             tadcluster{1,t}.respROIdff0_maxRlag_sq(r,c) = tadcluster{1,t}.respROIdff0_lag(1,tadcluster{1,t}.respROIdff0_maxR(2,idx));
         end
     end
@@ -97,13 +168,25 @@ end
 
 %% Reapply above analysis to each stimulus modality separately. 
 
+% make dff0_multi, vis, mech, ns into right shape with only respROIs
+for t = 1:length(tadcluster)
+    for r = 1:length(tadcluster{1,t}.resp_ROIs)
+        tadcluster{1,t}.dff0_multi(r, :) = reshape(tadcluster{1,t}.dff0_bystimtype{tadcluster{1,t}.resp_ROIs(r),1},[], 1);
+        tadcluster{1,t}.dff0_vis(r, :) = reshape(tadcluster{1,t}.dff0_bystimtype{tadcluster{1,t}.resp_ROIs(r),2},[], 1);
+        tadcluster{1,t}.dff0_mech(r, :) = reshape(tadcluster{1,t}.dff0_bystimtype{tadcluster{1,t}.resp_ROIs(r),3},[], 1);
+        tadcluster{1,t}.dff0_none(r, :) = reshape(tadcluster{1,t}.dff0_bystimtype{tadcluster{1,t}.resp_ROIs(r),4},[], 1);
+
+    end
+end
+
+
 for t = 1:length(tadcluster)
     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
-        set_lag = length(tadcluster{1,t}.df_f0{1,1});
-        [tadcluster{1,t}.respROIdff0_R_MS, tadcluster{1,t}.respROIdff0_lag_MS] = xcorr(tadcluster{1,t}.dff0_multi(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
-        [tadcluster{1,t}.respROIdff0_R_V, tadcluster{1,t}.respROIdff0_lag_V] = xcorr(tadcluster{1,t}.dff0_vis(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
-        [tadcluster{1,t}.respROIdff0_R_M, tadcluster{1,t}.respROIdff0_lag_M] = xcorr(tadcluster{1,t}.dff0_mech(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
-        [tadcluster{1,t}.respROIdff0_R_N, tadcluster{1,t}.respROIdff0_lag_N] = xcorr(tadcluster{1,t}.dff0_none(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
+        set_lag = length(tadcluster{1,t}.smoothed{1,1});
+        [tadcluster{1,t}.respROIdff0_R_MS, tadcluster{1,t}.respROIdff0_lag_MS] = xcorr(tadcluster{1,t}.dff0_multi', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_V, tadcluster{1,t}.respROIdff0_lag_V] = xcorr(tadcluster{1,t}.dff0_vis', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_M, tadcluster{1,t}.respROIdff0_lag_M] = xcorr(tadcluster{1,t}.dff0_mech', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_N, tadcluster{1,t}.respROIdff0_lag_N] = xcorr(tadcluster{1,t}.dff0_none', set_lag, 'coeff');
     end
 end
 

@@ -12,14 +12,14 @@
     % calculate average peak for each category
 
 %% Import tadpole struct for all experiments
-myFolder = 'F:/Calcium_Imaging_Analysis/analyzed_compiled/Smoothed_analysis/'; % May need to correct this.
+myFolder = 'D:\\Torrey_calcium_imaging\newData_20170924' %'F:/Calcium_Imaging_Analysis/analyzed_compiled/Smoothed_analysis/'; % May need to correct this.
 %mkdir([myFolder 'figures']);
 if ~isdir(myFolder)
 	errorMessage = sprintf('Error: The following folder does not exist:\n%s', myFolder);
 	uiwait(warndlg(errorMessage));
 	return;
 end
-filePattern = fullfile(myFolder, 'exp*.mat');
+filePattern = fullfile(myFolder, 'tadpole*.mat');
 matFiles = dir(filePattern)
 
 for k = 1:length(matFiles)
@@ -60,7 +60,7 @@ for t = 1:length(tadpole)
     [ tadpole{1,t}.boolean_response_sm, tadpole{1,t}.sum_responses_sm ] = get_respondingROIs2( tadpole{1,t}.area_bytrial_sm, tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.peakloc_bytrial_sm )
 
     % Find average area, peak and peakloc for each ROI for each stim type
-    [ tadpole{1,t}.area_avg_sm ] = mean_by_stimtype ( tadpole{1,t}.area_bytrial_sm, tadpole{1,t}.stimmask )
+    [ tadpole{1,t}.area_avg_sm ] = mean_by_stimtype2 ( cell2mat(tadpole{1,t}.area_bytrial_sm), tadpole{1,t}.stimmask )
     [ tadpole{1,t}.peak_avg_sm ] = mean_by_stimtype2 ( tadpole{1,t}.meanpeak_bytrial_sm, tadpole{1,t}.stimmask )
     [ tadpole{1,t}.peakloc_avg_sm ] = mean_by_stimtype2 ( tadpole{1,t}.peakloc_bytrial_sm, tadpole{1,t}.stimmask )
 

@@ -1,4 +1,4 @@
-function [ meanpeak_bytrial, peakloc_bytrial, peak_bytrial ] = calc_peak2( signal, startframe, endframe )
+function [ meanpeak_bytrial, peakloc_bytrial] = calc_peak2( signal, startframe, endframe )
 %[ meanpeak_bytrial, peakloc_bytrial, meanpeak_bytrial_errors ] = calc_peak( signal )
 
 %calc_peak takes df/f0 and returns the location of the peak and its value 
@@ -11,7 +11,11 @@ for i = 1:size(signal,1)
         [peak_bytrial(i,j), peakloc(i,j)] = max(signal{i,j}(startframe:(end-endframe)));
         lrange = peakloc(i,j) - 1 + startframe;
         urange = peakloc(i,j) + 1 + startframe;
-        meanpeak_bytrial(i,j) = mean(signal{i,j}(lrange:urange),2 );
+        if size(signal{1,j}, 1) ~= 1 % for this test data, this == 1, so this if statement doesn't run. WHY?
+            meanpeak_bytrial(i,j) = mean(signal{i,j}(lrange:urange),1 );
+        elseif size(signal{1,j}, 1) == 1
+            meanpeak_bytrial(i,j) = mean(signal{i,j}(1,lrange:urange));
+        end
     end
 end
 peakloc_bytrial_raw = peakloc + startframe
