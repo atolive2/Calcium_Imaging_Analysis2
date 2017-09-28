@@ -92,7 +92,11 @@ for  t = 1:length(tadcluster)
         vis = sum(tadcluster{1,t}.boolean_response(r, tadcluster{1,t}.stimmask(:,2))) / sum(tadcluster{1,t}.stimmask(:,2));
         mech = sum(tadcluster{1,t}.boolean_response(r, tadcluster{1,t}.stimmask(:,3))) / sum(tadcluster{1,t}.stimmask(:,3));
         if (vis + mech) == 0
-            tadcluster{1,t}.MSEnh_numresponses(r) = NaN;
+            if multi > 0
+                tadcluster{1,t}.MSEnh_numresponses(r) = 1;
+            else
+                tadcluster{1,t}.MSEnh_numresponses(r) = 0; 
+            end
         else
             tadcluster{1,t}.MSEnh_numresponses(r) = multi / (vis + mech);
         end
@@ -107,15 +111,132 @@ for  t = 1:length(tadcluster)
         vis = sum(tadcluster{1,t}.boolean_response(r, tadcluster{1,t}.stimmask(:,2))) / sum(tadcluster{1,t}.stimmask(:,2));
         mech = sum(tadcluster{1,t}.boolean_response(r, tadcluster{1,t}.stimmask(:,3))) / sum(tadcluster{1,t}.stimmask(:,3));
         if (vis + mech) == 0 %doesn't respond to either
-            tadcluster{1,t}.unibias_numresponses(r) = NaN;
+            tadcluster{1,t}.unibias_numresponses(r) = 0;
         else
             tadcluster{1,t}.unibias_numresponses(r) = vis/(vis+mech);
         end
     end
 end
 
+%% Get max Rvals and lag times so can compare
+
+% Make df_f0 separated by trial type (only use 1-4 here to eliminate
+% variation from stim strength)
+tmp = [];
+for t = 1:length(tadcluster)
+    for s = 1:4
+        trials_touse = find(tadcluster{1,t}.stimorder == s)
+       %tmp = [];
+        
+            for j = 1:size(tadcluster{1,t}.df_f0,1) % over each ROI
+                for i = 1:length(trials_touse) %over all trials of 1 stim type
+                    tmp = [tmp; tadcluster{1,t}.df_f0{j, trials_touse(i)}];
+                end
+                tadcluster{1,t}.dff0_bystimtype{j, s} = tmp;
+                tmp = [];
+            end
+    end
+end
+
+% first get a matrix ROI x dff0 for all trials of a given stimtype
+for t = 1:length(tadcluster)
+    for i = 1:size(tadcluster{1,t}.dff0_bystimtype,1)
+        if sum(size(tadcluster{1,t}.dff0_bystimtype{i,1})) > 0 %elimnate tads with no high/high multisensory trials
+        tadcluster{1,t}.dff0_multi(i,:) = tadcluster{1,t}.dff0_bystimtype{i,1}';
+        tadcluster{1,t}.dff0_vis(i,:) = tadcluster{1,t}.dff0_bystimtype{i,2}';
+        tadcluster{1,t}.dff0_mech(i,:) = tadcluster{1,t}.dff0_bystimtype{i,3}';
+        tadcluster{1,t}.dff0_none(i,:) = tadcluster{1,t}.dff0_bystimtype{i,4}';
+        end
+    end
+end
+
+% Calculate correlation coefficients by stim type
+
+for t = 1:length(tadcluster)
+    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
+        set_lag = length(tadcluster{1,t}.df_f0{1,1});
+        [tadcluster{1,t}.respROIdff0_R_MS, tadcluster{1,t}.respROIdff0_lag_MS] = xcorr(tadcluster{1,t}.dff0_multi(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_V, tadcluster{1,t}.respROIdff0_lag_V] = xcorr(tadcluster{1,t}.dff0_vis(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_M, tadcluster{1,t}.respROIdff0_lag_M] = xcorr(tadcluster{1,t}.dff0_mech(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
+        [tadcluster{1,t}.respROIdff0_R_N, tadcluster{1,t}.respROIdff0_lag_N] = xcorr(tadcluster{1,t}.dff0_none(tadcluster{1,t}.resp_ROIs,:)', set_lag, 'coeff');
+    end
+end
+
+% what is the max correlation between 2 ROIs?
+% this is the max of each column, and all columns that are an
+% autocorrelation will have max = 1
+for t = 1:length(tadcluster)
+    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
+    [tadcluster{1,t}.respROIdff0_maxR_MS(1,:), tadcluster{1,t}.respROIdff0_maxR_MS(2,:)] = max(tadcluster{1,t}.respROIdff0_R_MS);
+    [tadcluster{1,t}.respROIdff0_maxR_V(1,:), tadcluster{1,t}.respROIdff0_maxR_V(2,:)] = max(tadcluster{1,t}.respROIdff0_R_V);
+    [tadcluster{1,t}.respROIdff0_maxR_M(1,:), tadcluster{1,t}.respROIdff0_maxR_M(2,:)] = max(tadcluster{1,t}.respROIdff0_R_M);
+    [tadcluster{1,t}.respROIdff0_maxR_N(1,:), tadcluster{1,t}.respROIdff0_maxR_N(2,:)] = max(tadcluster{1,t}.respROIdff0_R_N);
+    end
+end
+
+%reshape the array to be size(length(resp_ROIs)) e.g. make it a square
+%again for plotting purposes. 
+%for reference, xcorr arranges the cols as 1-1, 1-2, 1-3 ... 1-n, 2-1, 2-2,
+%etc
+for t = 1:length(tadcluster)
+    if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
+        len = length(tadcluster{1,t}.resp_ROIs);
+        for r = 1:len
+            for c = 1:len
+                idx = (r-1)*len + c;
+                % max R value
+                tadcluster{1,t}.respROIdff0_maxR_sq_MS(r,c) = tadcluster{1,t}.respROIdff0_maxR_MS(1,idx);
+                tadcluster{1,t}.respROIdff0_maxR_sq_V(r,c) = tadcluster{1,t}.respROIdff0_maxR_V(1,idx);
+                tadcluster{1,t}.respROIdff0_maxR_sq_M(r,c) = tadcluster{1,t}.respROIdff0_maxR_M(1,idx);
+                tadcluster{1,t}.respROIdff0_maxR_sq_N(r,c) = tadcluster{1,t}.respROIdff0_maxR_N(1,idx);
+                % lag time of max R val
+                tadcluster{1,t}.respROIdff0_maxRlag_sq_MS(r,c) = tadcluster{1,t}.respROIdff0_lag_MS(1,tadcluster{1,t}.respROIdff0_maxR_MS(2,idx));
+                tadcluster{1,t}.respROIdff0_maxRlag_sq_V(r,c) = tadcluster{1,t}.respROIdff0_lag_V(1,tadcluster{1,t}.respROIdff0_maxR_V(2,idx));
+                tadcluster{1,t}.respROIdff0_maxRlag_sq_M(r,c) = tadcluster{1,t}.respROIdff0_lag_M(1,tadcluster{1,t}.respROIdff0_maxR_M(2,idx));
+                tadcluster{1,t}.respROIdff0_maxRlag_sq_N(r,c) = tadcluster{1,t}.respROIdff0_lag_N(1,tadcluster{1,t}.respROIdff0_maxR_N(2,idx));
+            end
+        end
+    end
+end
+
+% Go run lines 465-625 of correlations_newdata to find the highly
+% correlated ROIs
+
+%% ID highly correlated ROIs
+%%%%%%%%%%%%%%%% PROBLEM. HIGH CORR CELLS NOT APPEARING IN TADS 1-15. 
+
+for t = 1:length(tadcluster)
+    if isfield(tadcluster{1,t}, 'correlated_ROIs_dff0_MS_common_AROI')
+        high_corrs = [];
+        sprintf('tad %d has high corrs', t)
+        for i = 1:length(tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI)
+            high_corrs = [high_corrs; tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI{i}];
+        end
+        for i = 1:length(tadcluster{1,t}.resp_ROIs)   
+            if length(find(high_corrs == tadcluster{1,t}.resp_ROIs(i))) > 0
+                tadcluster{1,t}.ishighcorr_MS(i) = 1;
+            else 
+                tadcluster{1,t}.ishighcorr_MS(i) = 0;
+            end
+        end
+    else
+        tadcluster{1,t}.ishighcorr_MS = zeros(length(tadcluster{1,t}.resp_ROIs));
+    end
+end
+
+for t = 1:length(tadcluster)
+    if isfield(tadcluster{1,t}, 'ishighcorr_MS')
+        sprintf('%d', t)
+    end
+end
+
 %% Put data into 1 matrix for clustering
 % only use responding ROIs
+
+% to add together multiple tadclusters - rename vars first
+%tadcluster = [tadcluster2, tadcluster1];
+
+
 counter = 1
 for t = 1:length(tadcluster)
     for rr = 1:length(tadcluster{1,t}.resp_ROIs) 
@@ -129,6 +250,7 @@ for t = 1:length(tadcluster)
         cluster_data_respROI(counter,19) = tadcluster{1,t}.MSenh_peak(roi); %Multisensory enhancement based on average peak over high/high stimuli
         cluster_data_respROI(counter,20) = tadcluster{1,t}.MSEnh_numresponses(roi); %Multisensory enhancement based on number of responses to high/high stimuli
         cluster_data_respROI(counter,21) = tadcluster{1,t}.unibias_numresponses(roi); %unisensory bias based on number of responses to high/high stimuli
+        cluster_data_respROI(counter, 22) = tadcluster{1,t}.ishighcorr_MS(rr); %IS the ROI "highly correlated" from xcorr multi
         counter = counter + 1 ;
     end
 end
@@ -155,9 +277,12 @@ for i = 1:size(SigP,1)
 end
 
 %[a,b] = hist(SigP_sm(:,2), unique(SigP_sm(:,2)))
-hist(SigP(:,2), 19)
-xlim([1, 19])
-fig_filename = 'hist of correlated input variables'
+hist(SigP(:,2), 20)
+xlim([1, 20])
+xlabel('var num')
+ylabel('num correlated')
+title('Correlated Variables across all cells')
+fig_filename = 'hist of correlated input variables new'
 saveas(gcf, fig_filename, 'png')
 %so the variables not correlated with any other variables are
 %8 (peak_stddev_bymod Vis), 18 (MSEnh_numresponses) and 19
