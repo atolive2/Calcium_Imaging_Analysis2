@@ -2,7 +2,7 @@
 
 % first you need to tell it where to get tifs
 % if you want gui selection make this bool 1
-useGui=0;
+useGui=1;
 
 % if you want to hand code it, set the above bool to 0 and
 % set the path below, do not add the ending slash, I do that later
@@ -79,7 +79,7 @@ templateFrame=im2uint16(mean(templateStack(:,:,templateFrames),3),'Indexed');
 
 figure;
 imagesc(templateFrame) 
-
+savefig('templateFrame')
 %% now register that stack since you already imported it.
 preRegMean=mean(templateStack,3);
 regTemp=templateFrame;
@@ -153,6 +153,15 @@ clear registeredStack_1
     end
     %eval(['clear registeredStack_' num2str(n)])
 end
+
+%% If more than 6 blocks, split catStack into 2 for roiInspector
+catStack1 = catStack(:,:,1:10000);
+catStack2 = catStack(:,:,10001:end);
+%then delete catStack
+%then run roiInspector extraction on catStack1 and rename somaticF to
+%somaticF1
+%then run roiInspector extraction on catStack2 and rename somaticF to
+%somaticF2
 
 %% exp 42 problem with registration testing
 

@@ -28,7 +28,7 @@
 %% If beginning with basic tadpole data
 
 % import data:
-myFolder = 'D:\\Torrey_calcium_imaging\newData_20170924' %'F:/Calcium_Imaging_Analysis/analyzed_compiled/Smoothed_analysis/'; % May need to correct this.
+myFolder = 'D:\\Torrey_calcium_imaging\newData_20171018' %'F:/Calcium_Imaging_Analysis/analyzed_compiled/Smoothed_analysis/'; % May need to correct this.
 %mkdir([myFolder 'figures']);
 if ~isdir(myFolder)
 	errorMessage = sprintf('Error: The following folder does not exist:\n%s', myFolder);
@@ -76,7 +76,7 @@ for t = 1:length(tadcluster)
         
             for j = 1:size(tadcluster{1,t}.df_f0,1) % over each ROI
                 for i = 1:length(trials_touse) %over all trials of 1 stim type
-                    tmp = [tmp; tadcluster{1,t}.df_f0{j, trials_touse(i)}];
+                    tmp = [tmp; tadcluster{1,t}.smoothed{j, trials_touse(i)}];
                 end
                 tadcluster{1,t}.dff0_bystimtype{j, s} = tmp;
                 tmp = [];
@@ -182,7 +182,7 @@ end
 
 for t = 1:length(tadcluster)
     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
-        set_lag = length(tadcluster{1,t}.smoothed{1,1});
+        set_lag = length(tadcluster{1,t}.df_f0{1,1});
         [tadcluster{1,t}.respROIdff0_R_MS, tadcluster{1,t}.respROIdff0_lag_MS] = xcorr(tadcluster{1,t}.dff0_multi', set_lag, 'coeff');
         [tadcluster{1,t}.respROIdff0_R_V, tadcluster{1,t}.respROIdff0_lag_V] = xcorr(tadcluster{1,t}.dff0_vis', set_lag, 'coeff');
         [tadcluster{1,t}.respROIdff0_R_M, tadcluster{1,t}.respROIdff0_lag_M] = xcorr(tadcluster{1,t}.dff0_mech', set_lag, 'coeff');
@@ -617,12 +617,12 @@ end
 
 for t = 1:length(tadcluster)
     if sum(size(tadcluster{1,t}.dff0_bystimtype{1,1})) > 0
-        if isfield(tadcluster{1,t}, 'correlated_ROIs_alldff0_common_AROI')
+        if isfield(tadcluster{1,t}, 'correlated_ROIs_dff0_MS_common_AROI')
             rois = [];
             list = [];
-            for i = 1:length(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI)
-                rois = [rois tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI{i}'] %all ROIs in all groups
-                if ~isempty(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI{i})
+            for i = 1:length(tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI)
+                rois = [rois tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI{i}'] %all ROIs in all groups
+                if ~isempty(tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI{i})
                     list = [list tadcluster{1,t}.resp_ROIs(i)]; %the ROIs we're using for the groups
                 else
                     continue
@@ -632,9 +632,9 @@ for t = 1:length(tadcluster)
             % change size for each ROI-based cluster
             sizes = [];
             N = 1;
-            for j = 1:length(tadcluster{1,t}.correlated_ROIs_alldff0_common_AROI)
-                if ~isempty(tadcluster{1,t}.correlated_ROIs_alldff0_common{j})
-                    len=length(tadcluster{1,t}.correlated_ROIs_alldff0_common{j});
+            for j = 1:length(tadcluster{1,t}.correlated_ROIs_dff0_MS_common_AROI)
+                if ~isempty(tadcluster{1,t}.correlated_ROIs_dff0_MS_common{j})
+                    len=length(tadcluster{1,t}.correlated_ROIs_dff0_MS_common{j});
                     sizes = [sizes; N*ones(len,1)] ;
                     N = N+1;
                 end

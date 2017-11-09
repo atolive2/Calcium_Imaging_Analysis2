@@ -131,42 +131,50 @@ tadpole.stimorder = [1 1 1 1 1 1 1 1 1 1]
 tadpole.stimorder = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
 tadpole.stimorder = [1 2 3 4 2 3 1 4 3 1 2 4 ...
     3 2 1 4 1 3 2 4 2 1 3 4 ...
+    9 6 7 4 6 7 9 4 7 5 9 4 ...
+    7 6 9 4 9 7 6 4 6 9 7 4 ...
     1 2 3 4 2 3 1 4 3 1 2 4 ...
     3 2 1 4 1 3 2 4 2 1 3 4 ...
-    1 2 3 4 2 3 1 4 3 1 2 4] ...
+    9 6 7 4 6 7 9 4 7 5 9 4 ...
+    7 6 9 4 9 7 6 4 6 9 7 4 ...
+    1 2 3 4 2 3 1 4 3 1 2 4];
+    
     3 2 1 4 1 3 2 4 2 1 3 4 ...
     1 2 3 4 2 3 1 4 3 1 2 4 ...
     3 2 1 4 1 3 2 4 2 1 3 4];
 %tadpole.stimorder = [8 2 7 4 2 7 8 4 7 8 2 4 7 2 8 4 8 7 2 4 2 8 7 4 10 2 12 4 2 12 10 4 12 10 2 4 12 2 10 4 10 12 2 4 2 10 12 4 10 2 12 4 2 12 10 4 12 10 2 4]
-%exp42 tadpole.stimorder = [1 2 3 4 2 3 1 4 3 1 2 4 ...
-%     7 6 9 4 9 7 6 4 6 9 7 4 ...
-%     1 2 3 4 2 3 1 4 3 1 2 4 ...
-%     3 2 1 4 1 3 2 4 2 1 3 4 ...
-%     5 6 3 4 6 3 5 4 3 5 6 4 ...
-%     5 6 3 4 6 3 5 4 3 5 6 4]
+tadpole.stimorder = [1 2 3 4 2 3 1 4 3 1 2 4 ...
+    
+7 6 9 4 9 7 6 4 6 9 7 4 ...
+    1 2 3 4 2 3 1 4 3 1 2 4 ...
+    3 2 1 4 1 3 2 4 2 1 3 4 ...
+    5 6 3 4 6 3 5 4 3 5 6 4 ...
+    5 6 3 4 6 3 5 4 3 5 6 4]
 
 %check
 length(tadpole.stimorder)
 %2. experiment number
-tadpole.expnum= 30
+tadpole.expnum= 51
 %3. date of experiment
-tadpole.expdate='20170516'
+tadpole.expdate='20171028'
 %4. file path
-tadpole.filepath= 'D://Torrey_calcium_imaging/20170516 ca exp 30/'
+tadpole.filepath= 'D://Torrey_calcium_imaging/20171028 ca exp 51/'
 %5. make a folder for the figures
 mkdir([tadpole.filepath 'figures']); 
 %6. trial length
 tadpole.trial_length= [160];
 %7. number of trial blocks
-tadpole.numtrialblocks=5
+tadpole.numtrialblocks=1
 %8. Create figure save path
 tadpole.figure_filepath=[tadpole.filepath 'figures/']
 %9. number of trials in a block
-tadpole.num_trials=12
+tadpole.num_trials=20
 %10. what blocks is this?
-tadpole.blockids = [ 1 2 3 4 5 ]
+%tadpole.blockids = [ 1 2 3 4 5 6 7 8 9 ]
 %what cell number?
-%tadpole.cellid = 6
+tadpole.tadid = 1
+tadpole.cellid = 7
+tadpole.cellROI = 1
 
 % %Make sure there are no NaN ROIs--replace all NaN with 0.
 % [row, col] = find(isnan(somaticF))
@@ -261,7 +269,7 @@ for i = 1:size(tadpole.trial_splitS,2)
     clear('fig_filename')
 end
 
-%tadpole.badtrials = 3 [49 54 55 56 58 59 65 66 69 70 71 72 79 80] % [108 109 110 111 112 113 114 116 117 118 120 141 142 143 144 145 146 147 156 180];
+tadpole.badtrials = [85 86 94 95];
 
 %% After checking for bad trials visually
 
