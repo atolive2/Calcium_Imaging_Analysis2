@@ -200,46 +200,46 @@ tadpole.neuropilROIs=neuropilROIs;
 %save('', '-v7.3')
 % then open the mat file containing only tadpole struct.\
 
-%% remove extra frames to get 159 frames per trial
-% % only necessary if forgotten during tiff creation step in image J
-% % what trials need frames removed?
-% remove_from_trials = [trial_ids(1:154), trial_ids(156:165), trial_ids(169:175), trial_ids(177), trial_ids(180:186), trial_ids(192:196), trial_ids(198)]
-% 
-% % create a vector to be trial_length
-% all_trial_lengths = 159 * ones(1,204)
-% f159_trs = setdiff(trial_ids, remove_from_trials)
-% for i = 1:length(remove_from_trials)
-%     all_trial_lengths(remove_from_trials(i)) = all_trial_lengths(remove_from_trials(i)) + 1
-% end
-% 
-% % split the data into trials
-% data = tadpole.somaticF; % switch for somatic and neuropil
-% 
-% frame_end = 0;
-% frame_start = 1;
-% num_trials = length(all_trial_lengths)
-% split_trials=cell(size(data,1),num_trials);
-% for i = 1:num_trials
-%     frame_end = frame_end + all_trial_lengths(i)
-%     for j = 1:size(data,1)
-%     split_trials{j,i} = data(j, frame_start:frame_end);
-%     end
-%     frame_start = frame_end + 1
-% end
-% tadpole.trial_splitS_all = split_trials; %switch for somatic and neuropil
-% 
-% % % remove last frame of all trials with 160
-% % for i = 1:size(tadpole.trial_splitS_all, 2)
-% %     if length(tadpole.trial_splitS_all{1, i}) > 159
-% %         for j = 1:size(tadpole.trial_splitS_all, 1)
-% %         tadpole.trial_splitS{j, i} = tadpole.trial_splitS_all{j, i}(:, 1:159);
-% %         end
-% %     else
-% %         for j = 1:size(tadpole.trial_splitS_all, 1)
-% %         tadpole.trial_splitS{j, i} = tadpole.trial_splitS_all{j, i};
-% %         end
-% %     end
-% % end
+% remove extra frames to get 159 frames per trial
+% only necessary if forgotten during tiff creation step in image J
+% what trials need frames removed?
+remove_from_trials = [trial_ids(1:154), trial_ids(156:165), trial_ids(169:175), trial_ids(177), trial_ids(180:186), trial_ids(192:196), trial_ids(198)]
+
+% create a vector to be trial_length
+all_trial_lengths = 159 * ones(1,204)
+f159_trs = setdiff(trial_ids, remove_from_trials)
+for i = 1:length(remove_from_trials)
+    all_trial_lengths(remove_from_trials(i)) = all_trial_lengths(remove_from_trials(i)) + 1
+end
+
+% split the data into trials
+data = tadpole.neuropilF; % switch for somatic and neuropil
+
+frame_end = 0;
+frame_start = 1;
+num_trials = length(all_trial_lengths)
+split_trials=cell(size(data,1),num_trials);
+for i = 1:num_trials
+    frame_end = frame_end + all_trial_lengths(i)
+    for j = 1:size(data,1)
+    split_trials{j,i} = data(j, frame_start:frame_end);
+    end
+    frame_start = frame_end + 1
+end
+tadpole.trial_splitN_all = split_trials; %switch for somatic and neuropil
+
+% remove last frame of all trials with 160
+for i = 1:size(tadpole.trial_splitN_all, 2)
+    if length(tadpole.trial_splitN_all{1, i}) > 159
+        for j = 1:size(tadpole.trial_splitN_all, 1)
+        tadpole.trial_splitN{j, i} = tadpole.trial_splitN_all{j, i}(:, 1:159);
+        end
+    else
+        for j = 1:size(tadpole.trial_splitN_all, 1)
+        tadpole.trial_splitN{j, i} = tadpole.trial_splitN_all{j, i};
+        end
+    end
+end
 
 %% Split the data into trials
 

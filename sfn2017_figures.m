@@ -6,7 +6,7 @@
 
 % multi tectum shaped scatterplot (show resp_ROIs and highcorr ROIs only)
 for t = 1:length(allData)
-    if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
+    %if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
         if isfield(allData{1,t}, 'correlated_ROIs_dff0_MS_common_AROI')
             figure;
             hold on
@@ -14,13 +14,13 @@ for t = 1:length(allData)
             scatter(allData{1,t}.ROIcenters(allData{1,t}.uniqueHighCorrROI, 1), allData{1,t}.ROIcenters(allData{1,t}.uniqueHighCorrROI, 2), 150, 'o', 'filled', 'MarkerEdgeColor', 'y', 'MarkerFaceColor', 'y')
             hold off
             set(findobj(gcf, 'type','axes'), 'Visible','off')
-            xlim([0 500])
-            ylim([0 500])
+            %xlim([0 500])
+            %ylim([0 500])
             fig_filename = sprintf('tectum shaped plot of highcorr ROIs tad %d stage %d MS', allData{1,t}.expnum, allData{1,t}.stage)
             saveas(gcf, fig_filename, 'tiff')
             close;
         end
-    end
+    %end
 end
 
 %% Visual tectum shaped scatterplot (show resp_ROIs and highcorr ROIs only)
@@ -37,7 +37,7 @@ for t = 1:length(allData)
 end
 
 for t = 1:length(allData)
-    if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
+    %if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
         if isfield(allData{1,t}, 'correlated_ROIs_dff0_V_common_AROI')
             figure;
             hold on
@@ -45,13 +45,13 @@ for t = 1:length(allData)
             scatter(allData{1,t}.ROIcenters(allData{1,t}.uniqueHighCorrROI_V, 1), allData{1,t}.ROIcenters(allData{1,t}.uniqueHighCorrROI_V, 2), 150, 'o', 'filled', 'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r')
             hold off
             set(findobj(gcf, 'type','axes'), 'Visible','off')
-            xlim([0 500])
-            ylim([0 500])
+           % xlim([0 500])
+            %ylim([0 500])
             fig_filename = sprintf('tectum shaped plot of highcorr ROIs tad %d stage %d V', allData{1,t}.expnum, allData{1,t}.stage)
             saveas(gcf, fig_filename, 'tiff')
             close;
         end
-    end
+    %end
 end
 
 %% Mechanosensory tectum shaped scatterplot (show resp_ROIs and highcorr ROIs only)
@@ -68,21 +68,21 @@ for t = 1:length(allData)
 end
 
 for t = 1:length(allData)
-    if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
+    %if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
         if isfield(allData{1,t}, 'correlated_ROIs_dff0_M_common_AROI')
             figure;
             hold on
             scatter(allData{1,t}.ROIcenters(allData{1,t}.resp_ROIs, 1), allData{1,t}.ROIcenters(allData{1,t}.resp_ROIs, 2), 150, 'o', 'filled', 'MarkerFaceColor', [0.7 0.7 0.7])
             scatter(allData{1,t}.ROIcenters(allData{1,t}.uniqueHighCorrROI_M, 1), allData{1,t}.ROIcenters(allData{1,t}.uniqueHighCorrROI_M, 2), 150, 'o', 'filled', 'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b')
             hold off
-            xlim([0 500])
-            ylim([0 500])
+            %xlim([0 500])
+            %ylim([0 500])
             set(findobj(gcf, 'type','axes'), 'Visible','off')
             fig_filename = sprintf('tectum shaped plot of highcorr ROIs tad %d stage %d M', allData{1,t}.expnum, allData{1,t}.stage)
             saveas(gcf, fig_filename, 'tiff')
             close;
         end
-    end
+    %end
 end
 
 %% Overlpping cells plotted together
@@ -90,7 +90,7 @@ end
 
 % Find cells that are high corr in multiple stimulus conditions
 for t = 1:length(allData)
-    if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
+    %if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
         if isfield(allData{1,t}, 'correlated_ROIs_dff0_MS_common_AROI')
             if isfield(allData{1,t}, 'correlated_ROIs_dff0_M_common_AROI')
                 if isfield(allData{1,t}, 'correlated_ROIs_dff0_V_common_AROI')
@@ -116,14 +116,14 @@ for t = 1:length(allData)
                 end
             end
         end
-    end
+    %end
 end
 
 
 
 % Scatter plot data for tads with highcorr in all 3 modalities
 for t = 1:length(allData)
-    if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
+    %if sum(size(allData{1,t}.dff0_bystimtype{1,1})) > 0
         if isfield(allData{1,t}, 'correlated_ROIs_dff0_MS_common_AROI')
             if isfield(allData{1,t}, 'correlated_ROIs_dff0_M_common_AROI')
                 if isfield(allData{1,t}, 'correlated_ROIs_dff0_V_common_AROI')
@@ -146,8 +146,8 @@ for t = 1:length(allData)
                     % all M, V and MS highcorr ROIs as black filled circles
                     scatter(allData{1,t}.ROIcenters(allData{1,t}.highcorr_M_V_MS, 1), allData{1,t}.ROIcenters(allData{1,t}.highcorr_M_V_MS, 2), 150, 'o', 'filled', 'MarkerEdgeColor', 'k', 'MarkerFaceColor', 'k')
                     hold off
-                    xlim([0 250])
-                    ylim([0 250])
+                    %xlim([0 250])
+                    %ylim([0 250])
                     set(findobj(gcf, 'type','axes'), 'Visible','off')
                     fig_filename = sprintf('tectum shaped plot of highcorr ROIs tad %d (t%d) stage %d overlap', allData{1,t}.expnum, t, allData{1,t}.stage)
                     saveas(gcf, fig_filename, 'tiff')
@@ -155,7 +155,7 @@ for t = 1:length(allData)
                 end
             end
         end
-    end
+    %end
 end
 
 
