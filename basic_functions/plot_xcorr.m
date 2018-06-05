@@ -10,6 +10,6 @@ imagesc(abs(data))
 colorbar
 ylabel('ROI', 'fontsize', 30)
 xlabel('ROI', 'fontsize', 30)
-set(gca, 'fontsize', 20)
+set(gca, 'fontsize', 30)
 end
 

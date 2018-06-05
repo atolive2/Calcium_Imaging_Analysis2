@@ -854,27 +854,27 @@ for t = 1:length(allData)
         plot_xcorr(allData{1,t}.maxR_all_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted maxR all', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted maxR all', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.maxR_MS_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted maxR MS', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted maxR MS', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.maxR_M_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted maxR M', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted maxR M', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.maxR_V_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted maxR V', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted maxR V', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.maxR_N_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted maxR N', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted maxR N', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
     end    
 end
@@ -885,27 +885,27 @@ for t = 1:length(allData)
         plot_xcorr(allData{1,t}.lagmaxR_all_sorted, 'jet')
         title(sprintf('Tad%d(t=%d) sorted lagmaxR all', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lagmaxR all', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.lagmaxR_MS_sorted, 'jet')
         title(sprintf('Tad%d(t=%d) sorted lagmaxR MS', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lagmaxR MS', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.lagmaxR_M_sorted, 'jet')
         title(sprintf('Tad%d(t=%d) sorted lagmaxR M', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lagmaxR M', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.lagmaxR_V_sorted, 'jet')
         title(sprintf('Tad%d(t=%d) sorted lagmaxR V', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lagmaxR V', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.lagmaxR_N_sorted, 'jet')
         title(sprintf('Tad%d(t=%d) sorted lagmaxR N', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lagmaxR N', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
     end    
 end
@@ -916,27 +916,27 @@ for t = 1:length(allData)
         plot_xcorr(allData{1,t}.lag0R_all_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted lag0R all', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lag0R all', allData{1,t}.expnum, t);
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.lag0R_MS_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted lag0R MS', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lag0R MS', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.lag0R_M_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted lag0R M', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lag0R M', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.lag0R_V_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted lag0R V', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lag0R V', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
         plot_xcorr(allData{1,t}.lag0R_N_sorted, 'hot')
         title(sprintf('Tad%d(t=%d) sorted lag0R N', allData{1,t}.expnum, t))
         fig_filename = sprintf('Tad%d(t=%d) sorted lag0R N', allData{1,t}.expnum, t)
-        saveas(gcf, fig_filename, 'png')
+        saveas(gcf, fig_filename, 'epsc2')
         close;
     end    
 end

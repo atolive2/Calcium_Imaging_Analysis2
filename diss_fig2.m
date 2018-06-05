@@ -6,7 +6,7 @@
 
 
 %% 2B - prop ROIs respond by tad
-
+% this is actually in 3A
 % scatterplot the values by stage - proportion of respROIs
 % taken from compare_46_49_new
 figure;
@@ -122,9 +122,22 @@ saveas(gcf, fig_filename, 'png')
 saveas(gcf, fig_filename, 'epsc2')
 
 
+%% Stats for histograms
+% get median
 
+fig3_median(1,1) = median(prop_resp_bystim(1,:));
+fig3_median(2,1) = median(prop_resp_bystim(2,:));
+fig3_median(3,1) = median(prop_resp_bystim(3,:));
+fig3_median (1, 2) = median(allRespROIs(:, 7));
+fig3_median (2, 2) = median(allRespROIs(:, 8));
+fig3_median (3, 2) = median(allRespROIs(:, 9));
 
-
+fig3_mean(1,1) = mean(prop_resp_bystim(1,:));
+fig3_mean(2,1) = mean(prop_resp_bystim(2,:));
+fig3_mean(3,1) = mean(prop_resp_bystim(3,:));
+fig3_median (1, 2) = median(allRespROIs(:, 7));
+fig3_median (2, 2) = median(allRespROIs(:, 8));
+fig3_median (3, 2) = median(allRespROIs(:, 9));
 
 
 

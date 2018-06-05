@@ -45,14 +45,6 @@ end
 highcorr_sums(1,:) = sum(highcorr_list(s46_tads,:))
 highcorr_sums(2,:) = sum(highcorr_list(s49_tads,:))
 
-%% REcalculate by tadpole - use to generate summary venn diagram
-for t = 1:size(highcorr_list, 1)
-    HC_prop(t,:) = highcorr_list(t, 2:end) ./ highcorr_list(t,1);
-end
-
-HC__prop_avg(1,:) = nanmean(HC_prop(st46,:), 1)
-HC__prop_avg(2,:) = nanmean(HC_prop(st49,:), 1)
-
 
 %% B: proportion highcorr by stage and modality
 
@@ -152,8 +144,8 @@ end
 st46r = find(allRespROIs(:,3) == 46)
 st49r = find(allRespROIs(:,3) == 49)
 % index by stage (col 28) and hc/nhc (col 30) to group and stat test
-hc = find(allRespROIs(:,30) == 1);
-nhc = find(allRespROIs(:,30) == 0);
+hc = find(allRespROIs(:,13) == 1);
+nhc = find(allRespROIs(:,13) == 0);
 st46h = intersect(st46r, hc)
 st49h = intersect(st49r, hc)
 st46n = intersect(st46r, nhc)
@@ -164,19 +156,20 @@ st49n = intersect(st49r, nhc)
 %    'onset time MS'; 'onset time V'; 'onset time M'; 'onset time NS';...
 %    'onset time SD MS'; 'onset time SD V'; 'onset time SD M'; 'onset time SD NS'; ...
 %     'MSEnh num resp'; 'Uni bias num resp'};
-
+labels_all = {'t', 'r', 'stage', 'unimean_peak', 'unimean_onsettime', 'unimean_stdonsettime', 'resp_reliability', ...
+    'multi_avgpeak', 'multi_avgonsettime', 'multi_stdonsetttime', 'MSInd_peak', 'MSInd_onsettime', 'is_highcorr'}
 % Stat test hc vs nhc for each stage seperately (b/c no 2 way ANOVA for
 % nonparametric data)
 for i = 3:27
     hc = allRespROIs(st46h, i);
-    nhc = allRespROIs(st46h, i);
+    nhc = allRespROIs(st46n, i);
     allhighcorr46_H(i-2) = kstest2(hc, nhc);
 end
 diff_vars = labels(find(allhighcorr46_H))
 % no stat diffs
 for i = 3:27
     hc = allRespROIs(st49h, i);
-    nhc = allRespROIs(st49h, i);
+    nhc = allRespROIs(st49n, i);
     allhighcorr49_H(i-2) = kstest2(hc, nhc);
 end
 diff_vars = labels(find(allhighcorr49_H))
@@ -188,98 +181,195 @@ end
 % confusing
 
 % eliminate stage as variable
-for i = 3:27
+for i = 1:size(allRespROIs,2)
     hc_vals = allRespROIs(hc, i);
     nhc_vals = allRespROIs(nhc, i);
-    [allhighcorr_H(i-2, 1), allhighcorr_H(i-2, 2), allhighcorr_H(i-2, 3)] = kstest2(hc_vals, nhc_vals);
+    [allhighcorr_H(i, 1), allhighcorr_P(i, 2)] = kstest2(hc_vals, nhc_vals);
 end
-diff_vars = labels(find(allhighcorr_H(:,1)))
+diff_vars = labels_all(find(allhighcorr_H(:,1)))
 
+% get medians for all 
+for i = 1:size(allRespROIs,2)
+    med_all(i,4) = nanmedian(allRespROIs(hc, i));
+    med_all(i,5) = nanmedian(allRespROIs(nhc, i));
+end
+
+allhighcorr_P(:,4:5) = med_all(:,4:5)
+allhighcorr_P(:,1) = labels_all
 %% Make ECDF plots for variables that are significant
 
-% used this image to select colors: http://www.somersault1824.com/wp-content/uploads/2015/02/color-blindness-palette.png
+% where are my vars in allRespROIs?
+%onsettimeMS = 9
+%onsettimeMSSD = 10
+%peakof MS = 8
+% MSInd by peak = 12
 
-for i = 1:size(allhighcorr_H, 1)
-    if allhighcorr_H(i, 1)
-        [f1, x1] = ecdf(allRespROIs(hc, i+2)); 
-        [f2, x2] = ecdf(allRespROIs(nhc, i+2)); 
+vars = [8 9 10 11];
+labels = {'MS peak', 'onset time MS', 'onset time SD MS', 'MSInd_peak'}
+labelsX = {'peak (\DeltaF/F_{0}', 'onset time (sec)', 'SD of onset time (sec)', 'MSIndex'}
+limsX = [0 1.5; 0 4; 0 2; -1 2.5];
+% used this image to select colors: http://www.somersault1824.com/wp-content/uploads/2015/02/color-blindness-palette.png
+hc = find(allRespROIs(:,30) == 1);
+nhc = find(allRespROIs(:,30) == 0);
+for i = 1:length(vars)
+        dataHC = allRespROIs(hc, vars(i))
+        dataHCS = dataHC(~isnan(dataSC)) 
+        dataHCSS = dataHCS(isfinite(dataHCS))
+        dataSC = allRespROIs(nhc, vars(i))
+        dataSCS = dataSC(~isnan(dataSC)) 
+        dataSCSS = dataSCS(isfinite(dataSCS))
+        [f1, x1] = ecdf(dataHCSS); 
+        [f2, x2] = ecdf(dataSCSS); 
         figure;
         hold on
-        plot(x1, f1, 'Color', [0 .29, .29], 'LineWidth', 3) % hc in blue
-        plot(x2, f2, 'Color', [.71 .29, 1], 'LineWidth', 3) %nhc in purple
+        plot(x1, f1, 'Color', [0 .29, .29], 'LineWidth', 1.5) % hc in blue
+        plot(x2, f2, 'Color', [.71 .29, 1], 'LineWidth', 1.5) %nhc in purple
         hold off
         ylabel('ROIs')
-        xlabel(labels{i})
-        %xlim([-6 15])
-        set(gca,'FontSize',20)
+        xlabel(labelsX{i})
+        xlim(limsX(i,:))
+        set(gca,'FontSize',30)
         fig_filename = sprintf('ecdf hc_nhc %s', labels{i})
         saveas(gcf, fig_filename, 'png')
         saveas(gcf, fig_filename, 'epsc2')
-        close;
-    end
+        %close;
+
 end
 
+% calculate median value
+for i = 1:length(vars)
+    hc_meds(i,1) = nanmedian(allRespROIs(hc,vars(i)));
+    hc_meds(i,2) = nanmedian(allRespROIs(nhc,vars(i)));
+end
+
+histogram(allRespROIs(:, 12))
+
 % make histograms
-
-for i = 1:size(allhighcorr_H, 1)
-    if allhighcorr_H(i, 1)
+limsX = [0.01 1.5; 0.01 4; 0.01 2; -0.99 2.5];
+for i = 1:length(vars)
+%         dataHC = allRespROIs(hc, vars(i))
+%         dataHCS = dataHC(~isnan(dataSC))
+%         dataHCSS = dataHCS(isfinite(dataHCS))
         figure;
-        histogram(allRespROIs(hc, i+2), 40, 'FaceColor', [.71 .29, 1], 'EdgeColor', [.71 .29, 1]) %nhc in purple
-
+        hold on
+        histogram(dataHCSS, 40, 'FaceColor', [.71 .29, 1], 'EdgeColor', [.71 .29, 1], 'BinLimits', limsX(i,:)) %nhc in purple
+        plot([hc_meds(i,2) hc_meds(i,2)], ylim, 'k', 'LineWidth', 3) 
+        hold off
         ylabel('ROI Count')
-        xlabel(labels{i})
-        %xlim([-6 15])
-        set(gca,'FontSize',20)
+        xlabel(labelsX{i})
+        xlim(limsX(i,:))
+        set(gca,'FontSize',30)
+        %title(sprintf('label %s var %d', labels{i}, vars(i)))
         fig_filename = sprintf('hist hc_nhc NHC %s', labels{i})
         saveas(gcf, fig_filename, 'png')
         saveas(gcf, fig_filename, 'epsc2')
-        close;
-    end
+        %close;
 end
 
-for i = 1:size(allhighcorr_H, 1)
-    if allhighcorr_H(i, 1)
+for i = 1:length(vars)
         figure;
-
-        histogram(allRespROIs(hc, i+2), 40, 'FaceColor', [0 .29, .29], 'EdgeColor', [0 .29, .29]) % hc in blue
-
+        hold on
+        histogram(allRespROIs(hc, vars(i)), 40, 'FaceColor', [0 .29, .29], 'EdgeColor', [0 .29, .29], 'BinLimits', limsX(i,:)) % hc in blue
+        plot([hc_meds(i,1) hc_meds(i,1)], ylim, 'k', 'LineWidth', 3) 
+        hold off
         ylabel('ROI Count')
-        xlabel(labels{i})
-        %xlim([-6 15])
-        set(gca,'FontSize',20)
+        xlabel(labelsX{i})
+        xlim(limsX(i,:))
+        set(gca,'FontSize',30)
         fig_filename = sprintf('hist hc_nhc HC %s', labels{i})
         saveas(gcf, fig_filename, 'png')
         saveas(gcf, fig_filename, 'epsc2')
-        close;
-    end
+        %close;
 end
 
+%% Get large vals for inset 
 
+vals = [1.5, 4, 2, 2.5]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%vals = [2 3];
+for v = 1:length(vars)
+    tmp = allRespROIs(hc, vars(v)) 
+    tmp2 = tmp > vals(v);
+    large_peaks{v,1} = tmp(tmp2);
+    clear('tmp', 'tmp2')
+    tmp = allRespROIs(nhc, vars(v)) ;
+    tmp2 = tmp > vals(v);
+    large_peaks{v,2} = tmp(tmp2); 
+    clear('tmp', 'tmp2')
+end
+
+% plot all values larger than 2 by stage for each stim
+xvals = ones(1, 54)
+for v = 1:length(vars)
+    figure;
+    hold on
+    plot(xvals(1:length(large_peaks{v,1})), large_peaks{v,1}, 'go', 'LineWidth', 3)
+    plot((xvals(1:length(large_peaks{v,2}))+0.5), large_peaks{v,2}, 'mo', 'LineWidth', 3)
+    hold off
+    ylabel(labelsX{v})
+    xlim([0.5 2])
+    %ylim([0 1.1])
+    ax = gca;
+    ax.XTick = [1 1.5];
+    ax.XTickLabel = [46 49];
+    title(sprintf('Var %d', vars(v)))
+    set(gca, 'FontSize', 30)
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %% Make specific histograms for figure:
+%filenames = {'MS peak', 'onset time MS', 'onset time SD MS', 'MSInd_peak'}
+%Labels = {'peak (\DeltaF/F_{0}', 'onset time (sec)', 'SD of onset time (sec)', 'MSIndex'}
+filenames = {'unimean_onsettime USE'}
+Labels = {'SD response time (sec)'}
 
-Labels = {'onset time (sec)', 'SD of onset time (sec)', 'peak (\DeltaF/F_{0})'}
-filenames = {'onset time MS USE', 'onset time SD MS USE', 'unimax peak USE'}
-list = [14, 16, 20];
-limits = [-0.05, 2; 0, 6; 0, 3]
+% calculate median value
+%vars = [8 9 10 11];
+vars = 6
+for i = 1:length(vars)
+    hc_meds(i,1) = nanmedian(allRespROIs(hc,vars(i)));
+    hc_meds(i,2) = nanmedian(allRespROIs(nhc,vars(i)));
+end
+
+%%%%%%%%%%%testing
+% for i = 1:size(allRespROIs,2)
+%     hc_meds(i,1) = nanmedian(allRespROIs(hc,i));
+%     hc_meds(i,2) = nanmedian(allRespROIs(nhc,i));
+% end
+
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%Labels = {'onset time (sec)', 'SD of onset time (sec)', 'peak (\DeltaF/F_{0})'}
+%filenames = {'onset time MS USE', 'onset time SD MS USE', 'unimax peak USE'}
+%list = [8 9 10 11];
+list = 6
+%limits = [-inf, inf; -inf, inf; -inf, inf; -inf, inf;]%-0.05, 2; 0, 6; ]
+limits = [0 3];
 for i = 1:length(list)
         figure;
-        histogram(allRespROIs(hc, list(i)+2), 40, 'FaceColor', [0 .29, .29], 'EdgeColor', [0 .29, .29]) % hc in blue
+        hold on
+        histogram(allRespROIs(hc, list(i)), 60, 'FaceColor', [0/256 73/256 73/256], 'EdgeColor', [0/256 73/256 73/256]) % hc in blue
+        plot([hc_meds(i,1) hc_meds(i,1)], ylim, 'k', 'LineWidth', 3)
+        hold off
         ylabel('ROI Count')
         xlabel(Labels{i})
         xlim(limits(i, :))
-        set(gca,'FontSize',20)
+        set(gca,'FontSize',30)
         fig_filename = sprintf('hist hc_nhc HC %s', filenames{i})
         saveas(gcf, fig_filename, 'png')
         saveas(gcf, fig_filename, 'epsc2')
         %close;
         figure;
-        histogram(allRespROIs(nhc, list(i)+2), 40, 'FaceColor', [.71 .29, 1], 'EdgeColor', [.71 .29, 1]) %nhc in purple
+        hold on
+        histogram(allRespROIs(nhc, list(i)), 60, 'FaceColor', [146/256 73/256 0/256], 'EdgeColor', [146/256 73/256 0/256]) %nhc in purple
+        plot([hc_meds(i,2) hc_meds(i,2)], ylim, 'k', 'LineWidth', 3)
+        hold off
         ylabel('ROI Count')
         xlabel(Labels{i})
         xlim(limits(i, :))
-        set(gca,'FontSize',20)
+        set(gca,'FontSize',30)
         fig_filename = sprintf('hist hc_nhc NHC %s', filenames{i})
         saveas(gcf, fig_filename, 'png')
         saveas(gcf, fig_filename, 'epsc2')
@@ -288,17 +378,17 @@ for i = 1:length(list)
 end
 
 for i = 1:length(list)
-        [f1, x1] = ecdf(allRespROIs(hc, list(i)+2)); 
-        [f2, x2] = ecdf(allRespROIs(nhc, list(i)+2)); 
+        [f1, x1] = ecdf(allRespROIs(hc, list(i))); 
+        [f2, x2] = ecdf(allRespROIs(nhc, list(i))); 
         figure;
         hold on
-        plot(x1, f1, 'Color', [0 .29, .29], 'LineWidth', 3) % hc in blue
-        plot(x2, f2, 'Color', [.71 .29, 1], 'LineWidth', 3) %nhc in purple
+        plot(x1, f1, 'Color', [0/256 73/256 73/256], 'LineWidth', 3) % hc in blue
+        plot(x2, f2, 'Color', [146/256 73/256 0/256], 'LineWidth', 3) %nhc in purple
         hold off
         ylabel('ROI proportion')
         xlabel(Labels{i})
         xlim(limits(i, :))
-        set(gca,'FontSize',20)
+        set(gca,'FontSize',30)
         fig_filename = sprintf('ecdf hc_nhc NHC %s', filenames{i})
         saveas(gcf, fig_filename, 'png')
         saveas(gcf, fig_filename, 'epsc2')

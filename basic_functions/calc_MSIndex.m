@@ -64,7 +64,8 @@ function [ MSIn ] = calc_MSIndex( data )
 
 %for i = 1:size(MSstims, 2) % over each stim type
     for j = 1:size(data,2) % over each ROI
-        MSIn(1,j) = (data(1, j)- (max([data(2,j), data(3,j)]))) / max([data(2,j), data(3,j)]);
+        m = [data(2,j), data(3,j)];
+        MSIn(1,j) = (data(1, j)- (nanmax(m(isfinite(m)))) / nanmax(m(isfinite(m))));
     end
 %end
 

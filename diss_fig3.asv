@@ -4,8 +4,6 @@
 %load('D:\Torrey_calcium_imaging\compare_46-49\analysis_Feb 2018\corrected_for_badtrials\46_49_comparison\xcorr_corrected_20180313.mat')
 
 % steal figures from compare_46_49_new, but make them pretty
-
-
 %% 3B: prop resp in respROI
 
 prop_resp_allrespROI = [];
@@ -297,20 +295,16 @@ saveas(gcf, 'ecdf MSIndex peak', 'epsc2')
 %% E.  Multisensory Index by peak histogram
 
 figure;
-hist(allRespROIs(st49, 11),100);
-xlabel('MSIndex')
-ylabel('ROI count')
-xlim([-6 15])
-ylim([0 300])
+hist(allRespROIs(st49, 11),40);
+ylabel('MSIndex')
+xlabel('ROI count')
 set(gca,'FontSize',20)
 saveas(gcf, 'hist MSIndex peak 49', 'png')
 saveas(gcf, 'hist MSIndex peak 49', 'epsc2')
 figure;
 hist(allRespROIs(st46, 11),40);
-xlabel('MSIndex')
-ylabel('ROI count')
-xlim([-6 15])
-ylim([0 300])
+ylabel('MSIndex')
+xlabel('ROI count')
 set(gca,'FontSize',20)
 saveas(gcf, 'hist MSIndex peak 46', 'png')
 saveas(gcf, 'hist MSIndex peak 46', 'epsc2')
@@ -340,17 +334,15 @@ hist(allRespROIs(st49, 13),40);
 ylabel('MSIndex')
 xlabel('ROI count')
 set(gca,'FontSize',20)
-xlim([-1 15])
-ylim([0 180])
+xlim([-1 30])
 saveas(gcf, 'hist MSIndex onset time 49', 'png')
 saveas(gcf, 'hist MSIndex onset time 49', 'epsc2')
 figure;
-hist(allRespROIs(st46, 13),100);
+hist(allRespROIs(st46, 13),40);
 ylabel('MSIndex')
 xlabel('ROI count')
 set(gca,'FontSize',20)
 xlim([-1 15])
-ylim([0 180])
 saveas(gcf, 'hist MSIndex onset time 46', 'png')
 saveas(gcf, 'hist MSIndex onset time 46', 'epsc2')
 

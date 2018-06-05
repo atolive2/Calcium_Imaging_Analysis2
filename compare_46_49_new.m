@@ -58,6 +58,12 @@ xlabel('Stage')
 ylabel('Proportion of ROIs that respond')
 saveas(gcf, 'prop resROIs by stage', 'png')
 
+% get mean and SD of proportion of respROIs
+stats_propresp(1,1) = mean(ct_respROIs(s46_tads,3))
+stats_propresp(2,1) = mean(ct_respROIs(s49_tads,3))
+stats_propresp(1,2) = std(ct_respROIs(s46_tads,3))
+stats_propresp(2,2) = std(ct_respROIs(s49_tads,3))
+
 %% Do 46s differ from 49s on any basic parameter?
 % responses, area, peak, MSEnh, unimax_stimtype
 % calculate using only good trials. 
@@ -218,6 +224,7 @@ for t = 1:length(allData)
 end
 
 [7:9, 11, 13, 18:20, 22:24]
+%avg peak, MSindpeak, MSIndOT, avgOT, stdOT
 %% Recalculate graphs and stuff...
 
 %% Combining all cells, are there differences by stage in basic params?

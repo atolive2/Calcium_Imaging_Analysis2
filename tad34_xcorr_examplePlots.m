@@ -181,7 +181,7 @@ hold off
     xlabel('time (sec)', 'fontsize', 30)
     set(gca, 'fontsize', 20)
     fig_filename = sprintf('Tad 34 ROI %d all good MS trials df_f0)', roi)
-    saveas(gcf, fig_filename, 'png')
+    saveas(gcf, fig_filename, 'epsc2')
     
 % ROI 63
 roi = 63
@@ -205,7 +205,7 @@ hold off
     xlabel('time (sec)', 'fontsize', 30)
     set(gca, 'fontsize', 20)
     fig_filename = sprintf('Tad 34 ROI %d all good MS trials df_f0)', roi)
-    saveas(gcf, fig_filename, 'png')
+    saveas(gcf, fig_filename, 'epsc2')
     
 %% ROIs for correlation examples
 
