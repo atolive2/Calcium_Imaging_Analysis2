@@ -153,3 +153,112 @@ for t = 1:length(allData)
         end
     end
 end
+
+
+%% Combining all cells, are there differences by stage in basic params?
+st46 = find(allRespROIs(:,28) == 46);
+st49 = find(allRespROIs(:,28) == 49);
+labels = {'area MS'; 'area V'; 'area M'; 'area NS'; 'peak MS'; 'peak V'; 'peak M'; 'peak NS'; ... 
+    'peak loc MS'; 'peak loc V'; 'peak loc M'; 'peak loc NS'; 'MSEnh peak'; 'unimax peak'; 'unimax stimtype'; ... 
+    'onset time MS'; 'onset time V'; 'onset time M'; 'onset time NS';...
+    'onset time SD MS'; 'onset time SD V'; 'onset time SD M'; 'onset time SD NS'; ...
+     'MSEnh num resp'; 'Uni bias num resp'};
+ 
+% make ECDF plots for each var 
+for i = 3:27
+    s46 = allRespROIs(st46, i);
+    s49 = allRespROIs(st49, i);
+    figure;
+    hold on
+    ecdf(s46)
+
+    %set(h, 'Color', 'g')
+    ecdf(s49)
+    h = get(gca, 'children')
+    set(h, 'LineWidth', 3)
+    %j = get(gca, 'children')
+    %set(j, 'LineWidth', 3)
+    %set(j, 'Color', [0.5 0 0.5])
+    hold off
+    title(sprintf('%s ECDF by stage', labels{i-2}))
+    xlabel(labels{i-2})
+    ylabel('ROI count')
+    fig_filename = sprintf('st 46 vs 49 ECDF of %s', labels{i-2})
+    saveas(gcf, fig_filename, 'png')
+    close;
+end
+
+
+%% Does PCA differ by stage?
+
+% this is a small subset of the parameters - only the ones that we think
+% make sense to include. 
+
+% copied from PCA_loadings
+% This is based on Arseny's Elife paper plots
+% looking for PCA loadings
+
+% run PCA
+% doc: https://www.mathworks.com/help/stats/pca.html
+
+% get subset of allRespROIs data (eliminate area and peak loc)
+allRespROIs_PCAsub = allRespROIs(:, [7:10, 15:27]);
+labels_PCAsub = labels([5:8, 13:end])
+% run PCA on all responding ROIs together
+[coeff_all,score_all,latent_all,tsquared_all,explained_all,mu_all] = pca( [allRespROIs_PCAsub(:, :)]);
+% run PCA on each stage separately
+[coeff_46,score_46,latent_46,tsquared_46,explained_46,mu_46] = pca( [allRespROIs_PCAsub(st46, :)]);
+[coeff_49,score_49,latent_49,tsquared_49,explained_49,mu_49] = pca( [allRespROIs_PCAsub(st49, :)]);
+
+% the features (variables) put into allRespROIs(:, 3:27) are stored in labels
+
+% plot coefficients and data onto PC1 x PC2 space
+% https://www.mathworks.com/help/stats/biplot.html for documentation
+figure;
+biplot(coeff_all(:,1:2), 'Scores', score_all(:,1:2), 'VarLabels', labels_PCAsub)
+title('PCA loadings all data')
+figure;
+biplot(coeff_46(:,1:2), 'Scores', score_46(:,1:2), 'VarLabels', labels_PCAsub)
+title('PCA Loadings st 46 only')
+figure;
+biplot(coeff_49(:,1:2), 'Scores', score_49(:,1:2), 'VarLabels', labels_PCAsub)
+title('PCA loadings st 49 only')
+
+% plot amount of variance explained by each PC
+figure;
+bar(explained_all)
+title('Variance explained by PC component all data')
+xlabel('components')
+ylabel('percent')
+figure;
+bar(explained_46)
+title('Variance explained by PC component st46 only')
+xlabel('components')
+ylabel('percent')
+figure;
+bar(explained_49)
+title('Variance explained by PC component st49 only')
+xlabel('components')
+ylabel('percent')
+
+% plot MSEnh peak against PC1 value for all cells
+figure;
+scatter(score_all(:,1), allRespROIs_PCAsub(:,5))
+title('MSEnh peak vs PC1 All Data')
+xlabel('PC1')
+ylabel('MSEnh peak')
+saveas(gcf, 'MSEnh peak vs PC1 allRespROIs', 'png')
+
+figure;
+scatter(score_46(:,1), allRespROIs_PCAsub(st46,5))
+title('MSEnh peak vs PC1 St46 only')
+xlabel('PC1')
+ylabel('MSEnh peak')
+saveas(gcf, 'MSEnh peak vs PC1 st46 only', 'png')
+
+figure;
+scatter(score_49(:,1), allRespROIs_PCAsub(st49, 5))
+title('MSEnh peak vs PC1 St49 only')
+xlabel('PC1')
+ylabel('MSEnh peak')
+saveas(gcf, 'MSEnh peak vs PC1 st49 only', 'png')
