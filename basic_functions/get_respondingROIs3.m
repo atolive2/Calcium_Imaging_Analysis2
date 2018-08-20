@@ -1,4 +1,4 @@
-function [ boolean_response, sum_responses ] = get_respondingROIs( area, peak, peakloc )
+function [ boolean_response, sum_responses ] = get_respondingROIs3( area, peak, peakloc )
 %get_respondingROIs takes the area, peak and peakloc information for a set of trials and ROIS
 % and reports 1 if response and 0 if no response in a boolean array with same
 % dims as original. 
