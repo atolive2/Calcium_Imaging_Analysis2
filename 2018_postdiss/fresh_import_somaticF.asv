@@ -828,9 +828,33 @@ end
 
 % How many resp_ROIs old are in resp_ROIs new?
 for k = 1:length(allData)
-    ct_rois(k,1) = length(setdiff(allData(k).resp_ROIs, allData(k).old_respROIs)) %number rois in new but not old
-    ct_rois(k,2) = length(setdiff(allData(k).old_resp_ROIs, allData(k).respROIs)) %number rois in old but not new
-    ct_rois(k,3) = 
+    %if ~isempty(allData(k).resp_ROIs) && ~isempty(allData(k).old_respROIs)
+    ct_rois(k,1) = length(setdiff(allData(k).resp_ROIs, allData(k).old_respROIs)); %number rois in new but not old
+    ct_rois(k,2) = length(setdiff(allData(k).old_respROIs, allData(k).resp_ROIs)); %number rois in old but not new
+    ct_rois(k,3) = length(intersect(allData(k).resp_ROIs, allData(k).old_respROIs)); %number rois in both
+    %else
+    %   ct_rois(k,:) = [NaN NaN NaN]
+    %end
+end
+
+% Plot the overlap
+for t = 1:length(allData)
+    if length(allData(t).resp_ROIs) > (0.25 * length(allData(t).sum_resp_all_df_f0))
+        if allData(t).stage == 46
+            bar_outline(t,:) = [0.4660, 0.6740, 0.1880]
+        elseif allData(t).stage == 49
+            bar_outline(t, :) = [0.4940, 0.1840, 0.5560]
+        end
+    else
+        bar_outline(t, :) = [0.25, 0.25, 0.25]
+    end
+end
+
+X_val = 1:1:length(allData)
+Y_val = 135 * ones(length(allData)) 
+figure;
+bar(ct_rois, 'stacked') 
+
 
 
 

@@ -833,11 +833,44 @@ for k = 1:length(allData)
     ct_rois(k,2) = length(setdiff(allData(k).old_respROIs, allData(k).resp_ROIs)); %number rois in old but not new
     ct_rois(k,3) = length(intersect(allData(k).resp_ROIs, allData(k).old_respROIs)); %number rois in both
     %else
-     %   ct_rois(k,:) = [NaN NaN NaN]
+    %   ct_rois(k,:) = [NaN NaN NaN]
     %end
 end
 
+% Plot the overlap
+for t = 1:length(allData)
+    if length(allData(t).resp_ROIs) > (0.25 * length(allData(t).sum_resp_all_df_f0))
+        if allData(t).stage == 46
+            bar_outline(t,:) = [0.4660, 0.6740, 0.1880]
+        elseif allData(t).stage == 49
+            bar_outline(t, :) = [0.4940, 0.1840, 0.5560]
+        else 
+            bar_outline(t, :) = [0.7, 0.7, 0.7]
+        end
+    else
+        bar_outline(t, :) = [0.7, 0.7, 0.7]
+    end
+end
 
+% Label which exps were included in old version (dissertation)
+%incl = [2 3 5 6 7 8 9 
+
+X_val = 1:1:length(allData);
+Y_val = -5 * ones(1, length(allData)); 
+Y_val2 = - 10 * ones(1, length(allData)); 
+figure;
+hold on
+bar(ct_rois, 'stacked') 
+scatter(X_val, Y_val, 20, bar_outline, 'filled')
+scatter(X_val, Y_val, 20, bar_outline, 'filled')
+xlabel('experiment')
+ylabel('ROI count')
+set(gca,'FontSize',20)
+legend('New only', 'Old only', 'Both')
+ylim([-20 150])
+fig_filename = 'Bar of how many resp ROIs old and new criteria'
+saveas(gcf,fig_filename,'png');
+saveas(gcf, fig_filename, 'epsc2');
 
 %% Summary at end of August 2018:
 

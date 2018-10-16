@@ -1,0 +1,391 @@
+%% Using newly arranged allData (a single struct), make plots for version 1 of the paper
+
+% tadpoles included are ones with at least 25% of ROIs responding at least
+% once to a stim (e.g. response not in a spontaneous trial)
+
+%% Prepare workspace
+folder = 'D:\Torrey_calcium_imaging\2018August\manu_figs_v1'
+tad_stages = [allData(:).stage]
+st49_tads = find(tad_stages == 49)
+st46_tads = find(tad_stages == 46)
+
+val = find(responders(st49_tads) > 0.24);
+st49_keep = st49_tads(val);
+val46 = find(responders(st46_tads) > 0.24);
+st46_keep = st46_tads(val46);
+
+X_46 = ones(length(st46_tads),1)
+X_49 = 2* ones(length(st49_tads), 1)
+X_46k = ones(length(st46_keep),1)
+X_49k = 2* ones(length(st49_keep), 1)
+%% Figure 1A: Stg 46 have more generally responsive cells
+
+% proportion responding ROIS by tad
+
+figure;
+hold on
+scatter(X_46, responders(st46_tads), 'g')
+scatter(X_49, responders(st49_tads), 'm')
+scatter(X_46k, responders(st46_keep), 'g', 'filled')
+scatter(X_49k, responders(st49_keep), 'm', 'filled')
+hold off 
+xlabel('Stage')
+ylabel('Proportion Responding ROIs')
+xlim([0.5 2.5])
+set(gca,'FontSize',20)
+set(findobj(gca,'type','line'),'linew',2)
+fig_filename = 'f1p1_proprespROIsbytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+%%%%%%%% See manuscript_figures_v1 for box plots
+
+%% Figure 1B: histogram distributions by tad with thick line for average - peak
+% only use responding ROIs, but keep all trials from resp ROIs
+
+%% peak
+edges_peak = 0:0.1:3
+
+%multi
+for k = 1:length(allData)
+    if ~isempty(allData(k).resp_ROIs)
+        tmp = [];
+    stims_MS = find(allData(k).stimorder == 1);
+    for t = 1:length(stims_MS)
+            for r = 1:length(allData(k).resp_ROIs)
+                if allData(k).boolean_resp_df_f0(allData(k).resp_ROIs(r), stims_MS(t)) 
+                    tmp = [tmp, allData(k).peak_df_f0(allData(k).resp_ROIs(r), stims_MS(t))]; 
+                end
+            end
+        end
+    
+    [MS_peak_N(k,:) MS_peak_edges(k,:)] =  histcounts(tmp, edges_peak)
+    clear('stims_MS', 'tmp')
+    end
+end
+
+figure;
+hold on
+plot(MS_peak_edges(st46_tads,2:end)',MS_peak_N(st46_tads, :)', 'g')
+plot(MS_peak_edges(st49_tads(1:15),2:end)',MS_peak_N(st49_tads(1:15), :)', 'm')
+hold off 
+xlabel('Response peak size (df/f)')
+ylabel('Counts')
+
+%set(gca,'FontSize',20)
+%set(findobj(gca,'type','line'),'linew',2)
+fig_filename = 'f1p2_hist_response_peakMS_bytad_v2'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+% Vis 
+for k = 1:length(allData)
+    if ~isempty(allData(k).resp_ROIs)
+        tmp = [];
+    stims_MS = find(allData(k).stimorder == 2);
+    for t = 1:length(stims_MS)
+            for r = 1:length(allData(k).resp_ROIs)
+                if allData(k).boolean_resp_df_f0(allData(k).resp_ROIs(r), stims_MS(t)) 
+                    tmp = [tmp, allData(k).peak_df_f0(allData(k).resp_ROIs(r), stims_MS(t))]; 
+                end
+            end
+        end
+    
+    [MS_peak_N(k,:) MS_peak_edges(k,:)] =  histcounts(tmp, edges_peak)
+    clear('stims_MS', 'tmp')
+    end
+end
+
+figure;
+hold on
+plot(MS_peak_edges(st46_tads,2:end)',MS_peak_N(st46_tads, :)', 'g')
+plot(MS_peak_edges(st49_tads(1:15),2:end)',MS_peak_N(st49_tads(1:15), :)', 'm')
+hold off 
+xlabel('Response peak size (df/f)')
+ylabel('Counts')
+
+%set(gca,'FontSize',20)
+%set(findobj(gca,'type','line'),'linew',2)
+fig_filename = 'f1p2_hist_response_peakV_bytad_v2'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+%mech
+for k = 1:length(allData)
+    if ~isempty(allData(k).resp_ROIs)
+        tmp = [];
+    stims_MS = find(allData(k).stimorder == 3);
+    for t = 1:length(stims_MS)
+            for r = 1:length(allData(k).resp_ROIs)
+                if allData(k).boolean_resp_df_f0(allData(k).resp_ROIs(r), stims_MS(t)) 
+                    tmp = [tmp, allData(k).peak_df_f0(allData(k).resp_ROIs(r), stims_MS(t))]; 
+                end
+            end
+        end
+    
+    [MS_peak_N(k,:) MS_peak_edges(k,:)] =  histcounts(tmp, edges_peak)
+    clear('stims_MS', 'tmp')
+    end
+end
+
+figure;
+hold on
+plot(MS_peak_edges(st46_tads,2:end)',MS_peak_N(st46_tads, :)', 'g')
+plot(MS_peak_edges(st49_tads(1:15),2:end)',MS_peak_N(st49_tads(1:15), :)', 'm')
+hold off 
+xlabel('Response peak size (df/f)')
+ylabel('Counts')
+
+%set(gca,'FontSize',20)
+%set(findobj(gca,'type','line'),'linew',2)
+fig_filename = 'f1p2_hist_response_peakM_bytad_v2'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+%% Peaks for trials without a response
+% should probably make distribution. 
+
+
+
+%% latency (using only trials with responses)
+% multi
+for k = 1:length(allData)
+    if ~isempty(allData(k).resp_ROIs)
+        tmp = [];
+        stims_MS = find(allData(k).stimorder == 1);
+        for t = 1:length(stims_MS)
+            for r = 1:length(allData(k).resp_ROIs)
+                if allData(k).boolean_resp_df_f0(allData(k).resp_ROIs(r), stims_MS(t)) 
+                    tmp = [tmp, allData(k).peakloc_df_f0(allData(k).resp_ROIs(r), stims_MS(t))]; 
+                end
+            end
+        end
+        tmp2 = tmp - (allData(k).stim_onset * 22);
+        [MS_latency_N(k,:) MS_latency_edges(k,:)] =  histcounts(tmp2, 50);
+    end
+end
+figure;
+hold on
+plot(MS_latency_edges(st46_tads,2:end)',MS_latency_N(st46_tads, :)', 'g')
+plot(MS_latency_edges(st49_tads(1:15),2:end)',MS_latency_N(st49_tads(1:15), :)', 'm')
+hold off 
+xlabel('Response onset time (frames from stim onset)')
+ylabel('Counts')
+
+%set(gca,'FontSize',20)
+%set(findobj(gca,'type','line'),'linew',2)
+fig_filename = 'f1p2_hist_response_onsettime_bytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+% vis
+for k = 1:length(allData)
+    if ~isempty(allData(k).resp_ROIs)
+        tmp = [];
+        stims_MS = find(allData(k).stimorder == 2);
+        for t = 1:length(stims_MS)
+            for r = 1:length(allData(k).resp_ROIs)
+                if allData(k).boolean_resp_df_f0(allData(k).resp_ROIs(r), stims_MS(t)) 
+                    tmp = [tmp, allData(k).peakloc_df_f0(allData(k).resp_ROIs(r), stims_MS(t))]; 
+                end
+            end
+        end
+        tmp2 = tmp - (allData(k).stim_onset * 22);
+        [MS_latency_N(k,:) MS_latency_edges(k,:)] =  histcounts(tmp2, 50);
+    end
+end
+figure;
+hold on
+plot(MS_latency_edges(st46_tads,2:end)',MS_latency_N(st46_tads, :)', 'g')
+plot(MS_latency_edges(st49_tads(1:15),2:end)',MS_latency_N(st49_tads(1:15), :)', 'm')
+hold off 
+xlabel('Response onset time (frames from stim onset)')
+ylabel('Counts')
+
+%set(gca,'FontSize',20)
+%set(findobj(gca,'type','line'),'linew',2)
+fig_filename = 'f1p2_hist_response_onsettimeV_bytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+% mech
+for k = 1:length(allData)
+    if ~isempty(allData(k).resp_ROIs)
+        tmp = [];
+        stims_MS = find(allData(k).stimorder == 3);
+        for t = 1:length(stims_MS)
+            for r = 1:length(allData(k).resp_ROIs)
+                if allData(k).boolean_resp_df_f0(allData(k).resp_ROIs(r), stims_MS(t)) 
+                    tmp = [tmp, allData(k).peakloc_df_f0(allData(k).resp_ROIs(r), stims_MS(t))]; 
+                end
+            end
+        end
+        tmp2 = tmp - (allData(k).stim_onset * 22);
+        [MS_latency_N(k,:) MS_latency_edges(k,:)] =  histcounts(tmp2, 50);
+    end
+end
+figure;
+hold on
+plot(MS_latency_edges(st46_tads,2:end)',MS_latency_N(st46_tads, :)', 'g')
+plot(MS_latency_edges(st49_tads(1:15),2:end)',MS_latency_N(st49_tads(1:15), :)', 'm')
+hold off 
+xlabel('Response onset time (frames from stim onset)')
+ylabel('Counts')
+
+%set(gca,'FontSize',20)
+%set(findobj(gca,'type','line'),'linew',2)
+fig_filename = 'f1p2_hist_response_onsettimeM_bytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+%% Figure 2: MS Index
+
+%%%%% by peak and by onset time are in manuscript_figures_v1
+
+% MSInd by response reliability
+
+% recalculate response reliability using allData struct
+
+
+%% Figure 3: Methods for Correlations - this is the tricky bit. 
+
+%% First - re-calculate correlations using allData struct
+
+% remove first and last 3 points from each trial before reconcatinating
+for k = 1:length(allData) 
+    for r = 1:size(allData(k).smoothed, 1) %each roi
+        for t = 1:size(allData(k).smoothed, 2) %each trial
+            allData(k).smoothed_trunc{r,t} = allData(k).smoothed{r ,t}(4:(end-4));
+        end
+    end
+end
+
+%reconcatenate the truncated smoothed df/f by trial type (1-4 only)
+stim_types = [1 2 3]
+for k = 1:length(allData)
+    for s = 1:length(stim_types)
+        trials = find(allData(k).stimorder == stim_types(s));
+        if ~isempty(trials)
+        for r = 1:length(allData(k).resp_ROIs)
+            tmp = [];
+            for t = 1:length(trials)
+                tmp = [tmp; allData(k).smoothed_trunc{allData(k).resp_ROIs(r), trials(t)}];
+            end
+            allData(k).recon_df_f0{stim_types(s)}(r, :) = tmp;
+        end
+        clear('trials')
+        end
+    end
+end
+
+% plot example - use exp 19 (k=3) b/c it has 11 ROIs
+k=3
+figure;
+subplot(3,1,1)
+plot(allData(k).recon_df_f0{1,1}')
+set(gca,'xtick',[])
+ylabel('MS df/f_{0}')
+subplot(3,1,2)
+plot(allData(k).recon_df_f0{1,2}')
+set(gca,'xtick',[])
+ylabel('V df/f_{0}')
+subplot(3,1,3)
+plot(allData(k).recon_df_f0{1,3}')
+%set(gca,'xtick',[])
+ylabel('M df/f_{0}')
+
+%%%%%%%% need to remove bad trials!!!
+
+% what trials (for each ROI) get included in analysis? 
+% criteria: smoothed peak < 5 and > -0.5; (maybe only keep trials with 160 frames (for convienence)??); 
+for k = 1:length(allData)
+    allData(k).include = zeros(size(allData(k).peak_df_f0));
+    for t = 1:size(allData(k).peak_df_f0,1)
+        for r = 1:size(allData(k).peak_df_f0,2)
+            if allData(k).peak_df_f0(t,r) < 5
+                if allData(k).peak_df_f0(t,r) > -0.5
+                    allData(k).include(t,r) = 1;
+                end
+            end
+        end
+    end
+end
+
+%% Run xcorr only on good trials for each ROI pair with at least 2 same good trials to include
+% Use responding ROIs only 
+stims = [1 2 3]
+for k = 1:length(allData)
+    for s = 1:length(stims)
+        trials = find(allData(k).stimorder == stim_types(s));
+        if ~isempty(trials)
+            
+            for r1 = 1:(length(allData(k).resp_ROIs)) 
+                for r2 = 1:(length(allData(k).resp_ROIs)) 
+                    data = [];
+                    for t = 1:length(trials)
+                        if allData(k).include(allData(k).resp_ROIs(r1), trials(t)) && allData(k).include(allData(k).resp_ROIs(r2), trials(t))
+                            %fprintf('trial %d', t)
+                            tmp = [allData(k).smoothed_trunc{allData(k).resp_ROIs(r1), trials(t)}, allData(k).smoothed_trunc{allData(k).resp_ROIs(r2), trials(t)}];
+                            data = [data; tmp]; 
+                            clear('tmp')
+                        end
+                    end
+                    allData(k).xcorr(stims(s), r1, r2) = xcorr(data(:,1), data(:,2), 0);
+                    %clear('data')
+                end
+            end
+        end
+    end
+end
+
+
+%% Plot xcorr 
+
+for k = 1:length(allData)
+    for s = 1:length(stims)
+        %[B, I] = sort(allData(k).xcorr(stims(s), 
+        figure;
+colormap('hot')
+colormap(flipud(colormap))
+imagesc(allData(k).xcorr(stims(s), :,:))
+colorbar
+
+ylabel('ROI', 'fontsize', 30)
+xlabel('ROI', 'fontsize', 30)
+set(gca, 'fontsize', 20)
+fig_filename = sprintf('Tad%d(t=%d) maxR sorted MS', allData{1,t}.expnum, t)
+saveas(gcf, fig_filename, 'png')
+close;
+
+    
+    %%%%%%%%%%%% notes
+for t = 1:length(allData)
+    if isfield(allData{1,t}, 'highcorr_numROIs_MS')
+[B, I] = sort(allData{1,t}.highcorr_numROIs_MS, 'descend')
+for dim1 = 1:length(I)
+    for dim2 = 1:length(I)
+        xcorr_sorted(dim1, dim2) = allData{1,t}.respROIdff0_maxR_sq_MS(I(dim1), I(dim2));
+    end
+end
+
+figure;
+colormap('hot')
+colormap(flipud(colormap))
+imagesc(xcorr_sorted)
+colorbar
+
+ylabel('ROI', 'fontsize', 30)
+xlabel('ROI', 'fontsize', 30)
+set(gca, 'fontsize', 20)
+fig_filename = sprintf('Tad%d(t=%d) maxR sorted MS', allData{1,t}.expnum, t)
+saveas(gcf, fig_filename, 'png')
+close;
+clear('B', 'I', 'xcorr_sorted', 'fig_filename')
+    end    
+end
+
+
+
+
+
+

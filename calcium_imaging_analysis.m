@@ -151,22 +151,29 @@ tadpole.stimorder = [3 2 1 4 1 3 2 4 2 1 3 4] ...
     5 6 3 4 6 3 5 4 3 5 6 4 ...
     5 6 3 4 6 3 5 4 3 5 6 4]
 
+% alexis stimorder
+% 1 = V only 2= M only 3= M-V simul 4=M250V 5=M500V 6 = no stim
+[1 2 3 4 5 6 1 2 3 4 5 6];%C1
+[6 5 4 3 2 1 6 5 4 3 2 1]; %A1
+tadpole.stimorder = [6 5 4 3 2 1 6 5 4 3 2 1 1 2 3 4 5 6 1 2 3 4 5 6];
+
+
 %check
 length(tadpole.stimorder)
 %2. experiment number
-tadpole.expnum= 54
+tadpole.expnum= 0
 %3. date of experiment
-tadpole.expdate='20180522'
+tadpole.expdate='20180725'
 %4. file path
-tadpole.filepath= 'D://Torrey_calcium_imaging/Training_Adrian/exp_54/'
+tadpole.filepath= 'L:\\072518\'
 %5. make a folder for the figures
 mkdir([tadpole.filepath 'figures']); 
 %6. trial length
 tadpole.trial_length= [160];
 %7. number of trial blocks
-tadpole.numtrialblocks=1
+tadpole.numtrialblocks=2
 %8. Create figure save path
-tadpole.figure_filepath=[tadpole.filepath 'figures/']
+tadpole.figure_filepath=[tadpole.filepath 'figures\']
 %9. number of trials in a block
 tadpole.num_trials=12
 %10. what blocks is this?
@@ -263,13 +270,14 @@ for i = 1:size(tadpole.trial_splitS,2)
     xlabel('time(s)');
     ylabel('raw pixel intensity');
     hold off
-    fig_filename=sprintf([tadpole.figure_filepath 'exp%dtrial%d.png'], tadpole.expnum, i);
+    %fig_filename=sprintf([tadpole.figure_filepath, 'exp%dtrial%d.png'], tadpole.expnum, i);
+    fig_filename = sprintf('exp%dtrial%d.png', tadpole.expnum, i);
     saveas(gcf,fig_filename,'png');
     close;
     clear('fig_filename')
 end
 
-tadpole.badtrials = [85 86 94 95];
+%tadpole.badtrials = [85 86 94 95];
 
 %% After checking for bad trials visually
 
@@ -302,7 +310,7 @@ tadpole.badtrials = [85 86 94 95];
 %[ tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial] = calc_peak( tadpole.signal )
 
 % Define response/no response
-[ tadpole.boolean_response, tadpole.sum_responses ] = get_respondingROIs( cell2mat(tadpole.area_bytrial), tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial )
+[ tadpole.boolean_response, tadpole.sum_responses ] = get_respondingROIs( tadpole.area_bytrial, tadpole.meanpeak_bytrial, tadpole.peakloc_bytrial )
 
 % define stim mask by stim type
 [ tadpole.stimmask ] = get_stimmask( tadpole.stimorder );
