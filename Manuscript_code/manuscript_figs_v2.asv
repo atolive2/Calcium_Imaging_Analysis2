@@ -280,7 +280,8 @@ for t = 1:length(allData)
             plot_xcorr(squeeze(allData(t).maxR_sorted(s, :, :)), 'hot')
             title(sprintf('Tad%d(t=%d) sorted maxR sm_trunc stim %d', allData(t).expnum, t, s))
             fig_filename = sprintf('Tad%d(t=%d) sorted maxR sm_trunc stim %d', allData(t).expnum, t, s)
-            saveas(gcf, fig_filename, 'epsc2')
+            %saveas(gcf, fig_filename, 'epsc2')
+            saveas(gcf, fig_filename, 'png')
             close;
         end
     end
@@ -293,7 +294,8 @@ for t = 1:length(allData)
             plot_xcorr(squeeze(allData(t).lag0R_sorted(s, :, :)), 'hot')
             title(sprintf('Tad%d(t=%d) sorted lag 0 R sm_trunc stim %d', allData(t).expnum, t, s))
             fig_filename = sprintf('Tad%d(t=%d) sorted lag 0 R sm_trunc stim %d', allData(t).expnum, t, s)
-            saveas(gcf, fig_filename, 'epsc2')
+            %saveas(gcf, fig_filename, 'epsc2')
+            saveas(gcf, fig_filename, 'png')
             close;
         end
     end
@@ -307,7 +309,8 @@ for t = 1:length(allData)
             plot_xcorr(squeeze(allData(t).maxRlag_sorted(s, :, :)), 'jet')
             title(sprintf('Tad%d(t=%d) sorted maxRlag sm_trunc stim %d', allData(t).expnum, t, s))
             fig_filename = sprintf('Tad%d(t=%d) sorted maxRlag sm_trunc stim %d', allData(t).expnum, t, s)
-            saveas(gcf, fig_filename, 'epsc2')
+            %saveas(gcf, fig_filename, 'epsc2')
+            saveas(gcf, fig_filename, 'png')
             close;
         end
     end
@@ -557,15 +560,23 @@ end
 for k = 1:length(allData)
     if ~isempty(allData(k).correlROIs_common_AROI)
         for s = 1:length(stims)
-            highcorr_counts(s, 1) = length(allData(k).correlROIs_common_AROI{s}); %HC ROIs
-            highcorr_counts(s, 2) = length(allData(k).respROIs_ST); %all ROIs
-            highcorr_counts(s, 3) = highcorr_counts(s, 1) / highcorr_counts(s, 2); % proportion HC
+            highcorr_counts(k, s, 1) = length(allData(k).correlROIs_common_AROI{s}); %HC ROIs
+            highcorr_counts(k, s, 2) = length(allData(k).respROIs_ST); %all ROIs
+            highcorr_counts(k, s, 3) = highcorr_counts(k, s, 1) / highcorr_counts(k, s, 2); % proportion HC
         end
+    else
+        
     end
 end
 
                 
-                
+% Sort by Stage
+for k = 1:length(allData)
+    stage(k) = allData(k).stage;
+end
+
+
+
                 
                 
                 

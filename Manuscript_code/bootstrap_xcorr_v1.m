@@ -2,7 +2,16 @@
 
 % start with allData containing respROIs_ST, smoothed_trunc, and the list
 % of trials in order. 
+% folder: D:\Torrey_calcium_imaging\manuscript_figures\Version_2
+load('allData_workspace_20181015.mat')
 
+for k = 1:length(allData)
+    bootData(k).smoothed_trunc = allData(k).smoothed_trunc;
+end
+for k = 1:length(allData)
+    bootData(k).respROIs_ST = allData(k).respROIs_ST;
+    bootData(k).incl_trials = allData(k).incl_trials;
+end
 %% Shuffle the trials, calculate xcorr and report maxR, lagmaxR and 0lagR into corresponding fields 
 
 its = 100; % how many bootstrap iterations?
@@ -11,23 +20,23 @@ stims = [1 2 3 4] % MS, V, M, NS
 % each stim type
 tic
 for k = 1:length(allData)
-    if length(allData(k).respROIs_ST) > 5
-        set_lag = length(allData(k).smoothed_trunc{1,1});
+    if length(bootData(k).respROIs_ST) > 5
+        set_lag = length(bootData(k).smoothed_trunc{1,1});
         for s = 1:length(stims) %all 4 stims
-            for r1 = 1:length(allData(k).respROIs_ST) %all responding ROIs
-                for r2 = 1:length(allData(k).respROIs_ST) %all responding ROIs 
-                    all_tr = allData(k).incl_trials{s, r1, r2};   
+            for r1 = 1:length(bootData(k).respROIs_ST) %all responding ROIs
+                for r2 = 1:length(bootData(k).respROIs_ST) %all responding ROIs 
+                    all_tr = bootData(k).incl_trials{s, r1, r2};   
                     if ~isempty(all_tr)
                         for b = 1:its % number of iterations
                             r1_tr = all_tr(randperm(length(all_tr)));
                             r2_tr = all_tr(randperm(length(all_tr)));
                             tmp1 = [];
                             for tr = 1:length(r1_tr)
-                                tmp1 = [tmp1; allData(k).smoothed_trunc{allData(k).respROIs_ST(r1), r1_tr(tr)}];
+                                tmp1 = [tmp1; bootData(k).smoothed_trunc{bootData(k).respROIs_ST(r1), r1_tr(tr)}];
                             end
                             tmp2 = [];
                             for t2 = 1:length(r2_tr)
-                                tmp2 = [tmp2; allData(k).smoothed_trunc{allData(k).respROIs_ST(r2), r2_tr(t2)}];
+                                tmp2 = [tmp2; bootData(k).smoothed_trunc{bootData(k).respROIs_ST(r2), r2_tr(t2)}];
                             end
                             [boot_xcorr(k).R{s, r1, r2, b}, boot_xcorr(k).lag{s, r1, r2, b}] = xcorr(tmp1, tmp2, set_lag, 'coeff');
                             [boot_xcorr(k).maxR{s, r1, r2}(b), boot_xcorr(k).lagmaxR{s, r1, r2}(b)] = max(boot_xcorr(k).R{s, r1, r2, b}(:,:));

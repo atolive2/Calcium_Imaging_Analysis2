@@ -562,13 +562,33 @@ for k = 1:length(allData)
         for s = 1:length(stims)
             highcorr_counts(k, s, 1) = length(allData(k).correlROIs_common_AROI{s}); %HC ROIs
             highcorr_counts(k, s, 2) = length(allData(k).respROIs_ST); %all ROIs
-            highcorr_counts(k, s, 3) = highcorr_counts(s, 1) / highcorr_counts(s, 2); % proportion HC
+            highcorr_counts(k, s, 3) = highcorr_counts(k, s, 1) / highcorr_counts(k, s, 2); % proportion HC
         end
+    else
+        highcorr_counts(k, s, 1) = NaN;
     end
 end
 
                 
-                
+% Sort by Stage
+for k = 1:length(allData)
+    stage(k) = allData(k).stage;
+end
+
+propHC46_5 = [];
+propHC49_5 = [];
+for k = 1:length(stage)
+    if length(allData(k).respROIs_ST) > 10
+        if stage(k) == 46
+            propHC46_5 = [propHC46_5; highcorr_counts(k, :, 3)];
+        elseif stage(k) == 49
+            propHC49_5 = [propHC49_5; highcorr_counts(k, :, 3)];
+        else
+            continue
+        end
+    end
+end
+
                 
                 
                 

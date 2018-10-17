@@ -2,7 +2,16 @@
 
 % start with allData containing respROIs_ST, smoothed_trunc, and the list
 % of trials in order. 
+% folder: D:\Torrey_calcium_imaging\manuscript_figures\Version_2
+load('allData_workspace_20181015.mat')
 
+for k = 1:length(allData)
+    bootData(k).smoothed_trunc = allData(k).smoothed_trunc;
+end
+for k = 1:length(allData)
+    bootData(k).respROIs_ST = allData(k).respROIs_ST;
+    
+end
 %% Shuffle the trials, calculate xcorr and report maxR, lagmaxR and 0lagR into corresponding fields 
 
 its = 100; % how many bootstrap iterations?
