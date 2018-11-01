@@ -300,13 +300,15 @@ saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
 % use histcounts to get data, then boundedline to plot mean and 95% CI
 % (2*SD)
 
-% figure 1, get data, peak and latency for MS, V, M
+% figure 1, get data, (peak and latency for MS, V, M)
 stims = [1 2 3 4]
 for k = 1:length(allData)
     if ~isempty(allData(k).respROIs_ST)
         for s = 1:length(stims)
             
-
+        end
+    end
+end
 
 %% Figure 3: Correlation Methods; max correlation occurs at 0ms lag
 % recalculate xcorr with truncated df/f
@@ -749,11 +751,24 @@ for k = 1:length(stage)
 end
 
                 
-                
-                
-                
-                
-                
+%% Figure 4: Paired stats on xcorr
+
+% calculate mean maxR by stage and stimtype
+
+for k = 1:length(st46_keep)
+    mean_maxR(k, 1:3) = squeeze(mean(mean(allData(st46_keep(k)).maxR_sorted(1:3, :, :), 2), 3));
+end
+
+st = length(st46_keep)
+for k = 1:length(st49_keep)
+    mean_maxR(k+st, 1:3) = squeeze(mean(mean(allData(st49_keep(k)).maxR_sorted(1:3, :, :), 2), 3));
+end
+
+% stat test
+data = reshape(mean_maxR, 1, []) % preserves column ordering
+stage = repmat([repmat(46, length(st46_keep), 1); repmat(49, length(st49_keep), 1)], 3, 1);
+id = [1*ones(size(mean_maxR, 1), 1); 2*ones(size(mean_maxR, 1), 1); 3*ones(size(mean_maxR, 1), 1)];
+[p tbl stats] = anovan(data, {stage, id}                
                 
                 
                 

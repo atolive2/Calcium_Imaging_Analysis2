@@ -306,7 +306,9 @@ for k = 1:length(allData)
     if ~isempty(allData(k).respROIs_ST)
         for s = 1:length(stims)
             
-
+        end
+    end
+end
 
 %% Figure 3: Correlation Methods; max correlation occurs at 0ms lag
 % recalculate xcorr with truncated df/f
@@ -749,15 +751,52 @@ for k = 1:length(stage)
 end
 
                 
+%% Figure 4: Paired stats on xcorr
+
+% calculate mean maxR by stage and stimtype
+
+for k = 1:length(st46_keep)
+    mean_maxR(k, 1:3) = squeeze(mean(mean(allData(st46_keep(k)).maxR_sorted(1:3, :, :), 2), 3));
+end
+
+st = length(st46_keep)
+for k = 1:length(st49_keep)
+    mean_maxR(k+st, 1:3) = squeeze(mean(mean(allData(st49_keep(k)).maxR_sorted(1:3, :, :), 2), 3));
+end
+
+% stat test
+data = reshape(mean_maxR, 1, []) % preserves column ordering
+stage = repmat([repmat(46, length(st46_keep), 1); repmat(49, length(st49_keep), 1)], 3, 1);
+id = [1*ones(size(mean_maxR, 1), 1); 2*ones(size(mean_maxR, 1), 1); 3*ones(size(mean_maxR, 1), 1)];
+[p tbl stats] = anovan(data, {stage, id})                
+%p = 0.3191 for stage, 0.5512 for id                
                 
                 
-                
-                
-                
-                
-                
-                
-                
+% get data for boxplot into one vector of labels and 1 vector of data
+box_ids = [ones(1, 9), 2*ones(1, 9), 3*ones(1, 9), 4*ones(1, 10), 5*ones(1, 10), 6*ones(1, 10)]
+box_data = [mean_maxR(1:9, 1)', mean_maxR(1:9, 2)', mean_maxR(1:9, 3)', mean_maxR(10:19, 1)', mean_maxR(10:19, 2)', mean_maxR(10:19, 3)']
+%box_colors = [0 0.39 0; 0 0.39 0; 0 0.39 0; 1 0 1; 1 0 1; 1 0 1]
+box_colors = [255/256,215/256,0; 1 0 0; 0 0 1; 255/256,215/256,0; 1 0 0; 0 0 1]
+box_labels = {'MS', 'V', 'M', 'MS', 'V', 'M'}
+plot_xval46 = [ones(9, 1), 2*ones(9,1), 3*ones(9,1)]
+plot_xval49 = [4*ones(10, 1), 5*ones(10, 1), 6*ones(10, 1)]
+figure;
+hold on
+plot(plot_xval46(:,1:3), [mean_maxR(1:9, 1), mean_maxR(1:9, 2), mean_maxR(1:9, 3)], 'o', 'Color', [0 0.6 0], 'LineWidth', 0.1)
+plot(plot_xval46(:, 1:3)', [mean_maxR(1:9, 1), mean_maxR(1:9, 2), mean_maxR(1:9, 3)]', 'Color', [0 0.6 0], 'LineWidth', 0.1)
+plot(plot_xval49(:, 1:3), [mean_maxR(10:19, 1), mean_maxR(10:19, 2), mean_maxR(10:19, 3)], 'o', 'Color', [238/256, 130/256, 238/256], 'LineWidth', 0.1)
+plot(plot_xval49(:, 1:3)', [mean_maxR(10:19, 1), mean_maxR(10:19, 2), mean_maxR(10:19, 3)]', 'Color', [238/256, 130/256, 238/256], 'LineWidth', 0.1)
+h = boxplot(box_data, box_ids, 'BoxStyle', 'outline', 'Colors', box_colors, 'Labels', box_labels, 'PlotStyle', 'traditional')
+set(h,{'linew'},{2})
+hold off
+xlabel('stage 46                    stage 49')
+ylabel('mean correlation')
+%ylim([0 1])
+title('Mean corr by stage and stimtype')
+set(gca, 'FontSize', 20)
+fig_filename = 'Mean corr by stage and stimtype'
+saveas(gcf, fig_filename, 'png')
+saveas(gcf, fig_filename, 'epsc2')                
                 
                 
                 
