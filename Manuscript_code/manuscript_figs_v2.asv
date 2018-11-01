@@ -15,6 +15,8 @@
 % keepers = at least 25% of ROIs respond at least 1x in a stimulus trial. 
     % response = peak > 0.1, area >0 
 
+folder = 'D:\Torrey_calcium_imaging\manuscript_figures\Version_2'    
+    
 %% Generate Data Values using smoothed and truncated data, for only good trials. 
 % allData(k).smoothed_trunc is the df/f to use and allData(k).include is the good trials based on older analysis. 
 
@@ -95,17 +97,162 @@ st49_keep = intersect(st49_tads, keepers) % 10 total
 st46_keep = intersect(st46_tads, keepers) % 9 total
 
 %% Figure 1 Stage 46 tads have more generally responsive cells
-%%%%%% COME BACK TO THIS %%%%%%
-%% Figure 1A 
+% This code is copied from manuscript_figures_v1 but plots only have the 19
+% keeper tadpoles included. Also moved data formats from allData{1,t} cell array of structs to 
+% allData(k) struct 
 
+%% Figure 1A St 46 tads have more generally responsive cells 
+% changes from manuscript_figures_v1: 
+    %st49_tads -> st49_keep 
+    %allData{1,t} -> allData(t)
+        %resp_ROIs -> respROIs_ST
+        %ROIcenters -> ROICenters
+
+% Proportion of ROIs that respond by tadpole
+for t = 1:length(st49_keep)
+    st49_proprespROIs(t) = length(allData(st49_keep(t)).respROIs_ST) / size(allData(st49_keep(t)).ROICenters, 1);
+end
+
+for t = 1:length(st46_keep)
+    st46_proprespROIs(t) = length(allData(st46_keep(t)).respROIs_ST) / size(allData(st46_keep(t)).ROICenters, 1);
+end
+
+%make plot
+% first put all values in 1 vector and create a grouping variable
+st_ID = [46*ones(1,length(st46_keep)), 49*ones(1,length(st49_keep))]
+all_proprespROIs = [st46_proprespROIs, st49_proprespROIs]
+
+figure;
+hold on
+boxplot(all_proprespROIs, st_ID, 'Colors', 'gm')
+plot(ones(length(st46_keep), 1), st46_proprespROIs, 'go')
+plot(2*ones(length(st49_keep), 1), st49_proprespROIs, 'mo')
+hold off 
+xlabel('Stage')
+ylabel('Proportion Responding ROIs')
+set(gca,'FontSize',20)
+set(findobj(gca,'type','line'),'linew',2)
+fig_filename = '\figure_1\f1p1_proprespROIsbytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+% stat test (KS)
+[h p stat] = kstest2(st46_proprespROIs, st49_proprespROIs)
+% p = 0.0506
+
+
+% % proportion responses for ROIs by tadpole
+for t = 1:length(allData)
+    tmp = allData(t).sum_responses_ST(allData(t).respROIs_ST) / length(allData(t).stimorder)
+    prop_resp_trials(t) = mean(tmp)
+end
+
+%make plot
+sorted_propresptrials = [prop_resp_trials(st46_keep), prop_resp_trials(st49_keep)];
+figure;
+hold on
+boxplot(sorted_propresptrials, st_ID, 'Colors', 'gm')
+plot(ones(length(st46_keep)), prop_resp_trials(st46_keep), 'go')
+plot(2*ones(length(st49_keep)), prop_resp_trials(st49_keep), 'mo')
+hold off 
+xlabel('Stage')
+ylabel('Proportion trials with response')
+set(gca,'FontSize',20)
+set(findobj(gca,'type','line'),'linew',2)
+fig_filename = '\figure_1\f1p1_propresptrialssbyROIbytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+% stat test (KS)
+[h p stat] = kstest2(prop_resp_trials(st46_keep), prop_resp_trials(st49_keep))
+% p = 0.7475
+
+
+% Response size for respROIs by tadpole
+% % peak size for trials with resp for each resp_roi
+% %     if boolean response, include peakbytrial2 in avg
+% % avg peaks = per roi
+% % avg rois = per tad
+
+
+for t = 1:length(allData)
+    avg_peaksize(t) = mean(mean(allData(t).avg_meanpeak(:,allData(t).respROIs_ST)))
+end
+
+%make plot
+sorted_avg_peaksize = [avg_peaksize(st46_keep), avg_peaksize(st49_keep)];
+figure;
+hold on
+boxplot(sorted_avg_peaksize, st_ID, 'Colors', 'gm')
+plot(ones(length(st46_keep)), avg_peaksize(st46_keep), 'go')
+plot(2*ones(length(st49_keep)), avg_peaksize(st49_keep), 'mo')
+hold off 
+xlabel('Stage')
+ylabel('Peak Size')
+set(gca,'FontSize',20)
+set(findobj(gca,'type','line'),'linew',2)
+fig_filename = '\figure_1\f1p1_avg_peaksize_bytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+% stat test (KS)
+[h p stat] = kstest2(avg_peaksize(st46_keep), avg_peaksize(st49_keep))
+% p = 0. 1273
 
 %% Figure 2 Stage 49 tads have more MSI 
-% MSIndex, MS timing, 
-%%%%%% COME BACK TO THESE %%%%%%
+% MSIndex, MS timing, MS Resp Reliability 
 
+% 2A Standard MSI (peak response)
+for t = 1:length(allData)
+    avg_MSInd_peak(t) = mean(mean(allData(t).MSenh_peak(:,allData(t).respROIs_ST)));
+end
 
+%make plot
+sorted_avg_MSInd_peak = [avg_MSInd_peak(st46_keep), avg_MSInd_peak(st49_keep)];
+figure;
+hold on
+boxplot(sorted_avg_MSInd_peak, st_ID, 'Colors', 'gm')
+plot(ones(length(st46_keep)), avg_MSInd_peak(st46_keep), 'go')
+plot(2*ones(length(st49_keep)), avg_MSInd_peak(st49_keep), 'mo')
+hold off 
+xlabel('Stage')
+ylabel('MSInd')
+set(gca,'FontSize',20)
+set(findobj(gca,'type','line'),'linew',2)
+fig_filename = '\figure_2\f2p1_avg_MSInd_peak_bytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
 
-%% 2C MS reliability
+% stat test (KS)
+[h p stat] = kstest2(avg_MSInd_peak(st46_keep), avg_MSInd_peak(st49_keep))
+% p = 0.9485
+
+% 2B MS Timing
+for t = 1:length(allData)
+    avg_MSInd_onsettime(t) = mean(mean(allData(t).MSenh_peakloc(:,allData(t).respROIs_ST)));
+end
+
+%make plot
+sorted_avg_MSInd_onsettime = [avg_MSInd_onsettime(st46_keep), avg_MSInd_onsettime(st49_keep)];
+figure;
+hold on
+boxplot(sorted_avg_MSInd_onsettime, st_ID, 'Colors', 'gm')
+plot(ones(length(st46_keep)), avg_MSInd_onsettime(st46_keep), 'go')
+plot(2*ones(length(st49_keep)), avg_MSInd_onsettime(st49_keep), 'mo')
+hold off 
+xlabel('Stage')
+ylabel('MSInd')
+set(gca,'FontSize',20)
+set(findobj(gca,'type','line'),'linew',2)
+fig_filename = '\figure_2\f2p1_avg_MSInd_onsettime_bytad'
+saveas(gcf, fullfile(folder, fig_filename), 'png')
+saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
+
+% stat test (KS)
+[h p stat] = kstest2(avg_MSInd_onsettime(st46_keep), avg_MSInd_onsettime(st49_keep))
+% p = 0.8646
+
+% 2C MS reliability
 
 for k = 1:length(allData)
     MS = find(allData(k).stimorder == 1);
@@ -128,25 +275,37 @@ for t = 1:length(allData)
 end
 
 %make plot
-sorted_avg_MSInd = [avg_MSInd(st46_tads), avg_MSInd(st49_tads)];
+sorted_avg_MSInd = [avg_MSInd(st46_keep), avg_MSInd(st49_keep)];
 figure;
 hold on
 boxplot(sorted_avg_MSInd, st_ID, 'Colors', 'gm')
-plot(ones(length(st46_tads)), avg_MSInd(st46_tads), 'go')
-plot(2*ones(length(st49_tads)), avg_MSInd(st49_tads), 'mo')
+plot(ones(length(st46_keep)), avg_MSInd(st46_keep), 'go')
+plot(2*ones(length(st49_keep)), avg_MSInd(st49_keep), 'mo')
 hold off 
 xlabel('Stage')
 ylabel('MSInd')
 set(gca,'FontSize',20)
 set(findobj(gca,'type','line'),'linew',2)
-fig_filename = 'f2p3_avg_MSInd_responsereliability_bytad'
+fig_filename = '\figure_2\f2p3_avg_MSInd_responsereliability_bytad'
 saveas(gcf, fullfile(folder, fig_filename), 'png')
 saveas(gcf, fullfile(folder, fig_filename), 'epsc2')
 
 % statistically different? 
 % https://www.mathworks.com/help/stats/ranksum.html
-[p, tbl, stats] = ranksum(avg_MSInd(st46_keep), avg_MSInd(st49_keep))
-% not significant (p = 0.66)
+[h, p, stat] = kstest2(avg_MSInd(st46_keep), avg_MSInd(st49_keep))
+% not significant (p = 0.7044)
+
+%% Figure 1 and 2 histograms to display with boxplots
+
+% use histcounts to get data, then boundedline to plot mean and 95% CI
+% (2*SD)
+
+% figure 1, get data, peak and latency for MS, V, M
+stims = [1 2 3 4]
+for k = 1:length(allData)
+    if ~isempty(allData(k).respROIs_ST)
+        for s = 1:length(stims)
+            
 
 
 %% Figure 3: Correlation Methods; max correlation occurs at 0ms lag
@@ -565,7 +724,7 @@ for k = 1:length(allData)
             highcorr_counts(k, s, 3) = highcorr_counts(k, s, 1) / highcorr_counts(k, s, 2); % proportion HC
         end
     else
-        
+        highcorr_counts(k, s, 1) = NaN;
     end
 end
 
@@ -575,7 +734,19 @@ for k = 1:length(allData)
     stage(k) = allData(k).stage;
 end
 
-
+propHC46_5 = [];
+propHC49_5 = [];
+for k = 1:length(stage)
+    if length(allData(k).respROIs_ST) > 10
+        if stage(k) == 46
+            propHC46_5 = [propHC46_5; highcorr_counts(k, :, 3)];
+        elseif stage(k) == 49
+            propHC49_5 = [propHC49_5; highcorr_counts(k, :, 3)];
+        else
+            continue
+        end
+    end
+end
 
                 
                 
